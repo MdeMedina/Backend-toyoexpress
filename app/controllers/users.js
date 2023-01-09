@@ -18,10 +18,11 @@ const loginUser = async(req, res) => {
         } else {
             const isMatch = await bcrypt.compare(body.password, user.password)
             if (isMatch) {
+                if (!user.permissions.obviarIngreso){
                 const check = await checkearTime()
                 if (check.malaHora == true) {
                     res.status(401).json({ errormessage: `No se puede ingresar, el sitio abre de nuevo a las ${check.apertura}, por favor intentelo de nuevo a esa hora` })
-                } else {
+                }}else {
                 const signed = signToken(user._id)
                 res.status(200).send({ message: 'El usuario a ingresado correctamente, sera redirigido a la pagina de inicio', key: signed, name: user.username, permissions: user.permissions, email: user.email })
                 }
