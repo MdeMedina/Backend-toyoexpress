@@ -18,7 +18,7 @@ const loginUser = async(req, res) => {
         } else {
             const isMatch = await bcrypt.compare(body.password, user.password)
             if (isMatch) {
-                if (!user.permissions.obviarIngreso){
+                if (user.permissions.obviarIngreso === false){
                 const check = await checkearTime()
                 if (check.malaHora == true) {
                     res.status(401).json({ errormessage: `No se puede ingresar, el sitio abre de nuevo a las ${check.apertura}, por favor intentelo de nuevo a esa hora` })
