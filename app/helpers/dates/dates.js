@@ -11,7 +11,7 @@ control.formatDateHoy = (date) => {
     if (day.length < 2) 
         day = '0' + day;
 
-    return [year, month, day].join('-')
+    return [day, month, year].join('/')
 }
 
 control.formatDateManana = (date) => {
@@ -27,7 +27,7 @@ control.formatDateManana = (date) => {
     if (day.length < 2) 
         day = '0' + day;
 
-    return [year, month, day].join('-')
+    return [day, month, year].join('/')
 }
 
 
@@ -76,7 +76,7 @@ control.formatDateMonth = (date) => {
     if (day.length < 2) 
         day = '0' + day;
 
-    return [year, month ].join('-')
+    return [ month, year ].join('/')
 }
 
 control.formatDateYear = (date) => {
@@ -90,7 +90,7 @@ control.formatDateYear = (date) => {
     if (day.length < 2) 
         day = '0' + day;
 
-    return [year].join('-')
+    return [year].join('/')
 }
 
 control.formatMonth = (date) => {
@@ -136,7 +136,7 @@ control.formatDate = (date) => {
     if (day.length < 2) 
         day = '0' + day;
 
-    return [year, month, day].join('-');
+    return [day, month, year].join('/')
 }
 
 control.daysBetwenTwoDates = (start, end)=>{
