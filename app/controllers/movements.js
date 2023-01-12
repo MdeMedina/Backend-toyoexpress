@@ -22,7 +22,7 @@ const crearIngreso = async (req, res) => {
 
   const concepto = body.concepto;
   const monto = body.monto;
-  const fecha = hoy;
+  const fecha = body.fecha;
   const cuenta = body.cuenta;
   const pago = body.pago;
   const move = Ingreso.create({
