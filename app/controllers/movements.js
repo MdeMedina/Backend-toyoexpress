@@ -86,21 +86,34 @@ const crearEgreso = async (req, res) => {
 const modificarStatus = async (req, res) => {
   const { body } = req;
   const filter = body.identificador;
-  console.log(filter, body.vale);
   if (body.identificador.charAt(0) == "E") {
-    const move = await Egreso.findOneAndUpdate(
-      { identificador: filter },
-      { vale: body.vale, aFecha: body.aFecha },
-      { new: true }
-    );
-    res.status(200).send(move);
+    const isValeE = await Egreso.findOne({ vale: body.vale });
+    const isValeI = await Ingreso.findOne({ vale: body.vale });
+    if (isValeI || isValeE) {
+      console.log(isValeI, isValeE);
+      res.status(403).send("Este numero de aprobacion ya existe");
+    } else {
+      const move = await Egreso.findOneAndUpdate(
+        { identificador: filter },
+        { vale: body.vale, aFecha: body.aFecha },
+        { new: true }
+      );
+      res.status(200).send(move);
+    }
   } else if (body.identificador.charAt(0) == "I") {
-    const move = await Ingreso.findOneAndUpdate(
-      { identificador: filter },
-      { vale: body.vale, aFecha: body.aFecha },
-      { new: true }
-    );
-    res.status(200).send(move);
+    const isValeI = await Ingreso.findOne({ vale: body.vale });
+    const isValeE = await Egreso.findOne({ vale: body.vale });
+    if (isValeI || isValeE) {
+      console.log(isValeI, isValeE);
+      res.status(403).send("Este numero de aprobacion ya existe");
+    } else {
+      const move = await Ingreso.findOneAndUpdate(
+        { identificador: filter },
+        { vale: body.vale, aFecha: body.aFecha },
+        { new: true }
+      );
+      res.status(200).send(move);
+    }
   }
 };
 
