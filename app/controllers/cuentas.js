@@ -1,4 +1,5 @@
-const Cuenta = require("../models/date");
+const Cuenta = require("../models/cuenta");
+const { httpError } = require("../helpers/handleError");
 
 const getCuentas = async (req, res) => {
   let cuentas = await Cuenta.find({});
@@ -11,10 +12,11 @@ const getCuentas = async (req, res) => {
 
 const actCuenta = async (req, res) => {
   const { body } = req;
-  const act = await User.findOneAndUpdate(
+  const act = await Cuenta.findOneAndUpdate(
     { _id: body._id },
     {
-      name: body.name,
+      label: body.name,
+      value: body.name,
       color: body.color,
     }
   );
@@ -28,18 +30,26 @@ const actCuenta = async (req, res) => {
 const crearCuenta = async (req, res) => {
   const { body } = req;
   try {
-    const isAccount = await Cuenta.findOne({ email: body.email });
+    const isAccount = await Cuenta.findOne({ name: body.name });
     if (isAccount) {
-      return res.status(403).send("usuario ya existe");
+      res.status(403).send("Esa cuenta existe");
+    } else {
+      const account = await Cuenta.create({
+        label: body.name,
+        value: body.name,
+        color: body.color,
+      });
+      res.status(201).send(account);
     }
-    const account = await Cuenta.create({
-      name: body.name,
-      color: body.color,
-    });
-    res.status(201).send(account);
   } catch (e) {
     httpError(res, e);
   }
 };
 
-module.exports = { getCuentas, actCuenta, crearCuenta };
+const deleteCuentas = async (req, res) => {
+  const { body } = req;
+  const del = await Cuenta.findOneAndDelete({ _id: body._id });
+  res.status(200).send(del);
+};
+
+module.exports = { getCuentas, actCuenta, crearCuenta, deleteCuentas };
