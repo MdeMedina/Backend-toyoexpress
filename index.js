@@ -35,18 +35,8 @@ let io = new Server(server, {
 
 let nots = [];
 io.on("connection", (socket) => {
-  socket.on("join_room", (data) => {
-    socket.join(data);
-  });
-
-  socket.on("send_message", (data) => {
-    nots.unshift(data);
-    socket.to(data.room).emit("receive_message", nots);
-  });
-
-  socket.on("clean_nots", (data) => {
-    nots = [];
-    socket.to(data.room).emit("receive_message", nots);
+  socket.on("move", (data) => {
+    socket.broadcast.emit("move", data);
   });
 });
 
