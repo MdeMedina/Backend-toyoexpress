@@ -19,6 +19,7 @@ const checkearTime = async (next) => {
 
   const apertura_final = DateTime.fromSQL(hoy);
   const cierre_final = DateTime.fromSQL(hoy_cierre);
+  console.log(ahora_mismo >= cierre_final || ahora_mismo < apertura_final);
 
   if (ahora_mismo >= cierre_final || ahora_mismo < apertura_final) {
     // FUERA DE AQUI
