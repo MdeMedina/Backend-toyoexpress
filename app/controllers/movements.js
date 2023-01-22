@@ -83,6 +83,47 @@ const crearEgreso = async (req, res) => {
   res.status(201).send("Egreso enviado con exito");
 };
 
+const modificarMovimiento = async (req, res) => {
+  const { body } = req;
+  const filter = body.identificador;
+  const concepto = body.concepto;
+  const monto = body.monto;
+  const cuenta = body.cuenta;
+  const pago = body.pago;
+  const fecha = body.fecha;
+  if (body.identificador.charAt(0) == "E") {
+    const move = await Egreso.findOneAndUpdate(
+      { identificador: filter },
+      {
+        cuenta: cuenta,
+        concepto: concepto,
+        bs: body.bs,
+        change: body.change,
+        monto: monto,
+        fecha: fecha,
+        pago: pago,
+      },
+      { new: true }
+    );
+    res.status(200).send(move);
+  } else if (body.identificador.charAt(0) == "I") {
+    const move = await Ingreso.findOneAndUpdate(
+      { identificador: filter },
+      {
+        cuenta: cuenta,
+        concepto: concepto,
+        bs: body.bs,
+        change: body.change,
+        monto: monto,
+        fecha: fecha,
+        pago: pago,
+      },
+      { new: true }
+    );
+    res.status(200).send(move);
+  }
+};
+
 const modificarStatus = async (req, res) => {
   const { body } = req;
   const filter = body.identificador;
@@ -145,4 +186,5 @@ module.exports = {
   getMoves,
   modificarStatus,
   deleteMoves,
+  modificarMovimiento,
 };
