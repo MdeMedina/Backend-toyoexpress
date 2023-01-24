@@ -9,6 +9,18 @@ const authUser = (req, res) => {
   res.send(req.user);
 };
 
+const actNumber = async(req, res) => {
+  const { body } = req;
+  const act = await User.findOneAndUpdate(
+    { email: body.email },
+    {
+      cantidadM: body.cantidadM
+    }
+  );
+  res.status(200).send("Usuario actualizado con exito");
+
+}
+
 const loginUser = async (req, res) => {
   const { body } = req;
   try {
@@ -36,6 +48,7 @@ const loginUser = async (req, res) => {
               name: user.username,
               permissions: user.permissions,
               email: user.email,
+              cantidadM: user.cantidadM
             });
           }
         } else {
@@ -48,6 +61,7 @@ const loginUser = async (req, res) => {
             name: user.username,
             permissions: user.permissions,
             email: user.email,
+            cantidadM: user.cantidadM
           });
         }
       } else {
@@ -83,6 +97,7 @@ const registerUser = async (req, res) => {
       salt,
       username: body.username,
       permissions: body.permissions,
+      cantidadM: 10
     });
     const signed = signToken(user._id);
     res.status(201).send(user);
@@ -116,4 +131,5 @@ module.exports = {
   getUsers,
   actUser,
   deleteUsers,
+  actNumber
 };
