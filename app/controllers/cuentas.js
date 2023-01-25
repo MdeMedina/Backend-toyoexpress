@@ -30,8 +30,9 @@ const actCuenta = async (req, res) => {
 const crearCuenta = async (req, res) => {
   const { body } = req;
   try {
-    const isAccount = await Cuenta.findOne({ name: body.name });
+    const isAccount = await Cuenta.findOne({ label: body.name });
     if (isAccount) {
+      console.log(isAccount)
       res.status(403).send("Esa cuenta existe");
     } else {
       const account = await Cuenta.create({
