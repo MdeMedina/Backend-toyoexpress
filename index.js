@@ -28,7 +28,7 @@ app.use(express.static("app"));
 
 let io = new Server(server, {
   cors: {
-    origin: "http://front.toyoxpress.com",
+    origin: "http://localhost:3000",
     methods: ["GET", "POST", "UPDATE"],
   },
 });
