@@ -49,7 +49,9 @@ const crearCuenta = async (req, res) => {
 
 const deleteCuentas = async (req, res) => {
   const { body } = req;
-  const del = await Cuenta.findOneAndDelete({ _id: body._id });
+  console.log(body)
+  const del = await Cuenta.findOneAndRemove({ _id: body._id });
+  console.log(del)
   res.status(200).send(del);
 };
 
