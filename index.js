@@ -44,7 +44,6 @@ io.on("connection", (socket) => {
   })
 
   socket.on("send_aprove", (data) => {
-    console.log(data)
     socket.to(data.messageId).emit("receive_aprove", data)
   })
 });

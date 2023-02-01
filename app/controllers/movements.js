@@ -7,7 +7,7 @@ const crearIngreso = async (req, res) => {
   const hoy = `${formatDateHoy(new Date())}`;
   const name = body.name;
   const isMove = await Ingreso.find({});
-  console.log(isMove.length);
+
   let identificador;
   if (isMove.length < 10) {
     let par = isMove.length + 1;
@@ -46,11 +46,10 @@ const crearIngreso = async (req, res) => {
 
 const crearEgreso = async (req, res) => {
   const { body } = req;
-  console.log(body);
+
 
   const isMove = await Egreso.find({});
   const name = body.name;
-  console.log(isMove.length);
   let identificador;
   if (isMove.length < 9) {
     let par = isMove.length + 1;
@@ -154,14 +153,13 @@ const modificarMovimiento = async (req, res) => {
 };
 
 const modificarStatus = async (req, res) => {
-  console.log('entre')
+
   const { body } = req;
   const filter = body.identificador;
   if (body.identificador.charAt(0) == "E") {
     const isValeE = await Egreso.findOne({ vale: body.vale });
     const isValeI = await Ingreso.findOne({ vale: body.vale });
     if (isValeI || isValeE) {
-      console.log(isValeI, isValeE);
       res.status(403).send("Este numero de aprobacion ya existe");
     } else {
       const move = await Egreso.findOneAndUpdate(
@@ -175,7 +173,6 @@ const modificarStatus = async (req, res) => {
     const isValeI = await Ingreso.findOne({ vale: body.vale });
     const isValeE = await Egreso.findOne({ vale: body.vale });
     if (isValeI || isValeE) {
-      console.log(isValeI, isValeE);
       res.status(403).send("Este numero de aprobacion ya existe");
     } else {
       const move = await Ingreso.findOneAndUpdate(
@@ -189,7 +186,6 @@ const modificarStatus = async (req, res) => {
 };
 
 const getMoves = async (req, res) => {
-  console.log('entre')
   const egresos = await Egreso.find({});
   const ingresos = await Ingreso.find({});
   let moves = [];

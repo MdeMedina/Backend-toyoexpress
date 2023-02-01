@@ -50,7 +50,6 @@ const loginUser = async (req, res) => {
             });
           } else {
             const signed = signToken(user._id);
-            console.log(signed);
             res.status(200).json({
               message:
                 "El usuario a ingresado correctamente, sera redirigido a la pagina de inicio",
@@ -64,7 +63,6 @@ const loginUser = async (req, res) => {
           }
         } else {
           const signed = signToken(user._id);
-          console.log(signed);
           res.status(200).json({
             message:
               "El usuario a ingresado correctamente, sera redirigido a la pagina de inicio",
@@ -96,7 +94,6 @@ const getUsers = async (req, res) => {
 const registerUser = async (req, res) => {
   const { body } = req;
   try {
-    console.log(body);
     const isUser = await User.findOne({ email: body.email });
     const users = await User.find({})
     if (isUser) {
