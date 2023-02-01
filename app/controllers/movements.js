@@ -1,6 +1,6 @@
 const { Ingreso, Egreso } = require("../models/movimiento");
 const { DateTime } = require("luxon");
-const { formatDateHoy, formatDateManana } = require("../helpers/dates/dates");
+const { formatDateHoy} = require("../helpers/dates/dates");
 
 const crearIngreso = async (req, res) => {
   const { body } = req;
@@ -38,6 +38,8 @@ const crearIngreso = async (req, res) => {
     afecha: "",
     email: body.email,
     vale: "",
+    messageId: body.messageId,
+    disabled: false
   });
   res.status(201).send("Ingreso enviado con exito");
 };
@@ -50,7 +52,7 @@ const crearEgreso = async (req, res) => {
   const name = body.name;
   console.log(isMove.length);
   let identificador;
-  if (isMove.length < 10) {
+  if (isMove.length < 9) {
     let par = isMove.length + 1;
     identificador = `E-00${par}`;
   } else if (isMove.length >= 10 && isMove.length < 100) {
@@ -79,9 +81,36 @@ const crearEgreso = async (req, res) => {
     vale: "",
     afecha: "",
     email: body.email,
+    messageId: body.messageId,
+    disabled: false
   });
   res.status(201).send("Egreso enviado con exito");
 };
+
+const deleteMoves = async (req, res) => {
+  const { body } = req;
+  const filter = body.identificador;
+  if (body.identificador.charAt(0) == "E") {
+    const move = await Egreso.findOneAndUpdate(
+      { identificador: filter },
+      {
+        disabled: true
+      },
+      { new: true }
+    );
+    res.status(200).send(move);
+  } else if (body.identificador.charAt(0) == "I") {
+    const move = await Ingreso.findOneAndUpdate(
+      { identificador: filter },
+      {
+        disabled: true
+      },
+      { new: true }
+    );
+    res.status(200).send(move);
+  }
+};
+
 
 const modificarMovimiento = async (req, res) => {
   const { body } = req;
@@ -125,6 +154,7 @@ const modificarMovimiento = async (req, res) => {
 };
 
 const modificarStatus = async (req, res) => {
+  console.log('entre')
   const { body } = req;
   const filter = body.identificador;
   if (body.identificador.charAt(0) == "E") {
@@ -159,6 +189,7 @@ const modificarStatus = async (req, res) => {
 };
 
 const getMoves = async (req, res) => {
+  console.log('entre')
   const egresos = await Egreso.find({});
   const ingresos = await Ingreso.find({});
   let moves = [];
@@ -169,16 +200,6 @@ const getMoves = async (req, res) => {
     moves.push(n);
   });
   res.status(200).send(moves);
-};
-const deleteMoves = async (req, res) => {
-  const { body } = req;
-  if (body.identificador.charAt(0) == "E") {
-    const del = await Egreso.findOneAndDelete({ _id: body._id });
-    res.status(200).send(del);
-  } else if (body.identificador.charAt(0) == "I") {
-    const del = await Ingreso.findOneAndDelete({ _id: body._id });
-    res.status(200).send(del);
-  }
 };
 module.exports = {
   crearIngreso,

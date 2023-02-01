@@ -21,6 +21,16 @@ const actNumber = async(req, res) => {
 
 }
 
+const actNotificaciones = async(req, res) => {
+  const { body } = req;
+  const act = await User.findOneAndUpdate({
+    email: body.email
+  },
+  {notificaciones: body.notificaciones}
+  );
+  res.status(200).send(act)
+}
+
 const loginUser = async (req, res) => {
   const { body } = req;
   try {
@@ -48,7 +58,8 @@ const loginUser = async (req, res) => {
               name: user.username,
               permissions: user.permissions,
               email: user.email,
-              cantidadM: user.cantidadM
+              cantidadM: user.cantidadM,
+              messageId: user.messageId
             });
           }
         } else {
@@ -61,7 +72,8 @@ const loginUser = async (req, res) => {
             name: user.username,
             permissions: user.permissions,
             email: user.email,
-            cantidadM: user.cantidadM
+            cantidadM: user.cantidadM,
+            messageId: user.messageId
           });
         }
       } else {
@@ -86,6 +98,7 @@ const registerUser = async (req, res) => {
   try {
     console.log(body);
     const isUser = await User.findOne({ email: body.email });
+    const users = await User.find({})
     if (isUser) {
       return res.status(403).send("usuario ya existe");
     }
@@ -97,7 +110,9 @@ const registerUser = async (req, res) => {
       salt,
       username: body.username,
       permissions: body.permissions,
-      cantidadM: 10
+      cantidadM: 10,
+      messageId: users.length + 1,
+      notificaciones: []
     });
     const signed = signToken(user._id);
     res.status(201).send(user);
@@ -131,5 +146,6 @@ module.exports = {
   getUsers,
   actUser,
   deleteUsers,
-  actNumber
+  actNumber,
+  actNotificaciones
 };

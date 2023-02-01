@@ -15,6 +15,6 @@ router.put("/updateMove", modificarMovimiento);
 router.get("/", getMoves);
 
 router.post("/egreso", crearEgreso);
-router.delete("/deleteMoves", deleteMoves);
+router.put("/deleteMoves", deleteMoves);
 
 module.exports = router;

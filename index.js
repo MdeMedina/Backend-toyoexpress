@@ -38,6 +38,15 @@ io.on("connection", (socket) => {
   socket.on("move", (data) => {
     socket.broadcast.emit("move", data);
   });
+
+  socket.on("join_room", (data) => {
+    socket.join(data);
+  })
+
+  socket.on("send_aprove", (data) => {
+    console.log(data)
+    socket.to(data.messageId).emit("receive_aprove", data)
+  })
 });
 
 server.listen(PORT, () => {

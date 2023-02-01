@@ -12,7 +12,8 @@ const Ingreso = mongoose.model('Ingreso', {
     fecha: {type: String, required: true},
     name:  {type: String, required: true},
     vale: {type: String},
-    aFecha: {type: String}
+    aFecha: {type: String},
+    messageId: {type: Number, required: true}
 })
 
 const Egreso = mongoose.model('Egreso', {
@@ -27,7 +28,9 @@ const Egreso = mongoose.model('Egreso', {
     fecha: {type: String, required: true},
     name:  {type: String, required: true},
     vale: {type: String},
-    aFecha: {type: String}
+    aFecha: {type: String},
+    messageId: {type: Number, required: true},
+    disabled: {type: Boolean, required: true}
 })
 
 

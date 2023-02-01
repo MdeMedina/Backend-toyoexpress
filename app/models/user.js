@@ -6,7 +6,9 @@ const User = mongoose.model('User', {
     permissions: {type: Object, required: true},
     password: {type: String, required: true},
     salt: {type: String, required: true},
-    cantidadM: {type: Number}
+    cantidadM: {type: Number},
+    messageId: {type: Number},
+    notificaciones: {type: Array}
 })
 
 module.exports = User
