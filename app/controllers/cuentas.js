@@ -32,7 +32,6 @@ const crearCuenta = async (req, res) => {
   try {
     const isAccount = await Cuenta.findOne({ label: body.name });
     if (isAccount) {
-      console.log(isAccount)
       res.status(403).send("Esa cuenta existe");
     } else {
       const account = await Cuenta.create({
@@ -49,9 +48,7 @@ const crearCuenta = async (req, res) => {
 
 const deleteCuentas = async (req, res) => {
   const { body } = req;
-  console.log(body)
   const del = await Cuenta.findOneAndRemove({ _id: body._id });
-  console.log(del)
   res.status(200).send(del);
 };
 
