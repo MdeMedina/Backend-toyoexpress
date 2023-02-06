@@ -21,6 +21,24 @@ const actNumber = async(req, res) => {
 
 }
 
+const getInactive = async(req, res) => { 
+  const { body } = req;
+  const user = await User.findOne({email: body.email})
+  res.status(200).send({hour: user.Inactive})
+}
+
+const actInactive = async(req, res) => {
+  const { body } = req;
+  let actual = new Date()
+  const act = await User.findOneAndUpdate(
+    { email: body.email },
+    {
+      Inactive: actual
+    }
+  );
+  res.status(200).send(`Tiempo de inactividad actualizado con exito ${act}`);
+}
+
 const actNotificaciones = async(req, res) => {
   const { body } = req;
   const act = await User.findOneAndUpdate({
@@ -144,5 +162,7 @@ module.exports = {
   actUser,
   deleteUsers,
   actNumber,
-  actNotificaciones
+  actNotificaciones,
+  actInactive,
+  getInactive
 };

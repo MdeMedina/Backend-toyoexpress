@@ -8,7 +8,8 @@ const User = mongoose.model('User', {
     salt: {type: String, required: true},
     cantidadM: {type: Number},
     messageId: {type: Number},
-    notificaciones: {type: Array}
+    notificaciones: {type: Array},
+    Inactive: {type: Object}
 })
 
 module.exports = User
