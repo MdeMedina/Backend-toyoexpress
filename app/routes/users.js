@@ -1,6 +1,6 @@
 const express = require(`express`)
 const router = express.Router()
-const { registerUser, loginUser, authUser, getUsers, actUser, deleteUsers, actNumber, actNotificaciones, actInactive, getInactive} = require('../controllers/users')
+const { registerUser, loginUser, authUser, getUsers, actUser, deleteUsers, actNumber, actNotificaciones, actInactive, getInactive, actPass} = require('../controllers/users')
 const { checkearHorario } = require('../middleware/checkTime')
 const isAuthenticated = require('../middleware/isAuth')
 
@@ -14,5 +14,6 @@ router.get('/auth', isAuthenticated, authUser)
 router.get('/', getUsers)
 router.put('/actInactive', actInactive)
 router.post('/inactive', getInactive)
+router.post("/actpass", actPass)
 
 module.exports = router

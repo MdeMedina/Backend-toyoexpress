@@ -148,6 +148,26 @@ const actUser = async (req, res) => {
   );
   res.status(200).send("Usuario actualizado con exito");
 };
+
+const actPass = async (req, res) => {
+  const { body } = req;
+  const user = await User.findOne({ email: body.email });
+  const isMatch = await bcrypt.compare(body.ActualPassword, user.password);
+  if (isMatch) {
+  const salt = await bcrypt.genSalt();
+  const hashed = await bcrypt.hash(body.password, salt);
+  const act = await User.findOneAndUpdate(
+    { email: body.email },
+    {
+      password: hashed
+    }
+  );
+  res.status(200).send("Contraseña actualizada con éxito");
+  } else {
+    res.status(403).send({ errormessage: "contraseña inválida" });
+  }
+};
+
 const deleteUsers = async (req, res) => {
   const { body } = req;
   const del = await User.findOneAndDelete({ _id: body._id });
@@ -164,5 +184,6 @@ module.exports = {
   actNumber,
   actNotificaciones,
   actInactive,
-  getInactive
+  getInactive, 
+  actPass
 };
