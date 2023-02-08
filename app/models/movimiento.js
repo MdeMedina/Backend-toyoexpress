@@ -13,6 +13,7 @@ const Ingreso = mongoose.model('Ingreso', {
     name:  {type: String, required: true},
     vale: {type: String},
     aFecha: {type: String},
+    disabled: {type: Boolean, required: true},
     messageId: {type: Number, required: true}
 })
 
