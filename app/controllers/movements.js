@@ -41,7 +41,16 @@ const crearIngreso = async (req, res) => {
     messageId: body.messageId,
     disabled: false
   });
-  res.status(201).send("Ingreso enviado con exito");
+  const egresos = await Egreso.find({});
+  const ingresos = await Ingreso.find({});
+  let moves = [];
+  egresos.map((n) => {
+    moves.push(n);
+  });
+  ingresos.map((n) => {
+    moves.push(n);
+  });
+  res.status(201).send({message: "Ingreso enviado con exito", moves});
 };
 
 const crearEgreso = async (req, res) => {
@@ -49,9 +58,10 @@ const crearEgreso = async (req, res) => {
 
 
   const isMove = await Egreso.find({});
+  console.log()
   const name = body.name;
   let identificador;
-  if (isMove.length < 9) {
+  if (isMove.length < 10) {
     let par = isMove.length + 1;
     identificador = `E-00${par}`;
   } else if (isMove.length >= 10 && isMove.length < 100) {
@@ -61,6 +71,7 @@ const crearEgreso = async (req, res) => {
     let par = isMove.length + 1;
     identificador = `E-${par}`;
   }
+
 
   const concepto = body.concepto;
   const monto = body.monto;
@@ -83,12 +94,23 @@ const crearEgreso = async (req, res) => {
     messageId: body.messageId,
     disabled: false
   });
-  res.status(201).send("Egreso enviado con exito");
+  const egresos = await Egreso.find({});
+  const ingresos = await Ingreso.find({});
+  let moves = [];
+  egresos.map((n) => {
+    moves.push(n);
+  });
+  ingresos.map((n) => {
+    moves.push(n);
+  });
+  res.status(201).send({message:"Egreso enviado con exito", moves});
 };
 
 const deleteMoves = async (req, res) => {
   const { body } = req;
   const filter = body.identificador;
+
+
   if (body.identificador.charAt(0) == "E") {
     const move = await Egreso.findOneAndUpdate(
       { identificador: filter },
@@ -106,7 +128,16 @@ const deleteMoves = async (req, res) => {
       },
       { new: true }
     );
-    res.status(200).send(move);
+    const egresos = await Egreso.find({});
+    const ingresos = await Ingreso.find({});
+    let moves = [];
+    egresos.map((n) => {
+      moves.push(n);
+    });
+    ingresos.map((n) => {
+      moves.push(n);
+    });
+    res.status(200).send({moves});
   }
 };
 
@@ -119,6 +150,8 @@ const modificarMovimiento = async (req, res) => {
   const cuenta = body.cuenta;
   const pago = body.pago;
   const fecha = body.fecha;
+
+
   if (body.identificador.charAt(0) == "E") {
     const move = await Egreso.findOneAndUpdate(
       { identificador: filter },
@@ -148,7 +181,16 @@ const modificarMovimiento = async (req, res) => {
       },
       { new: true }
     );
-    res.status(200).send(move);
+    const egresos = await Egreso.find({});
+    const ingresos = await Ingreso.find({});
+    let moves = [];
+    egresos.map((n) => {
+      moves.push(n);
+    });
+    ingresos.map((n) => {
+      moves.push(n);
+    });
+    res.status(200).send(moves);
   }
 };
 
@@ -180,7 +222,17 @@ const modificarStatus = async (req, res) => {
         { vale: body.vale, aFecha: body.aFecha },
         { new: true }
       );
-      res.status(200).send(move);
+      const egresos = await Egreso.find({});
+      const ingresos = await Ingreso.find({});
+      let moves = [];
+      egresos.map((n) => {
+        moves.push(n);
+      });
+      ingresos.map((n) => {
+        moves.push(n);
+      });
+    
+      res.status(200).send({moves});
     }
   }
 };
