@@ -118,8 +118,17 @@ const deleteMoves = async (req, res) => {
         disabled: true
       },
       { new: true }
-    );
-    res.status(200).send(move);
+    );    
+    const egresos = await Egreso.find({});
+    const ingresos = await Ingreso.find({});
+    let moves = [];
+    egresos.map((n) => {
+      moves.push(n);
+    });
+    ingresos.map((n) => {
+      moves.push(n);
+    });
+    res.status(200).send(moves);
   } else if (body.identificador.charAt(0) == "I") {
     const move = await Ingreso.findOneAndUpdate(
       { identificador: filter },
@@ -166,7 +175,16 @@ const modificarMovimiento = async (req, res) => {
       },
       { new: true }
     );
-    res.status(200).send(move);
+    const egresos = await Egreso.find({});
+    const ingresos = await Ingreso.find({});
+    let moves = [];
+    egresos.map((n) => {
+      moves.push(n);
+    });
+    ingresos.map((n) => {
+      moves.push(n);
+    });
+    res.status(200).send(moves);
   } else if (body.identificador.charAt(0) == "I") {
     const move = await Ingreso.findOneAndUpdate(
       { identificador: filter },
