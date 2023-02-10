@@ -48,7 +48,7 @@ const crearMovimiento = async (req, res) => {
   movimientos.map((n) => {
     moves.push(n);
   });
-  res.status(201).send({message: "Movimiento creado con exito", moves});
+  res.status(201).send({message: "Movimiento creado con exito", moves, status:200});
 }
 
 const deleteMoves = async (req, res) => {
@@ -66,7 +66,7 @@ const deleteMoves = async (req, res) => {
     movimientos.map((n) => {
       moves.push(n);
     });
-    res.status(200).send({moves});
+    res.status(200).send({moves, status:200});
   
 };
 
@@ -109,7 +109,7 @@ const modificarMovimiento = async (req, res) => {
     movimientos.map((n) => {
       moves.push(n);
     });
-    res.status(200).send(moves);
+    res.status(200).send({moves, status:200});
 };
 
 const modificarStatus = async (req, res) => {

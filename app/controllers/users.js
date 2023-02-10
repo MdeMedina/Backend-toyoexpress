@@ -17,7 +17,9 @@ const actNumber = async(req, res) => {
       cantidadM: body.cantidadM
     }
   );
-  res.status(200).send("Usuario actualizado con exito");
+
+  const users = await User.find();
+  res.status(200).send(users);
 
 }
 
@@ -130,7 +132,8 @@ const registerUser = async (req, res) => {
       notificaciones: []
     });
     const signed = signToken(user._id);
-    res.status(201).send(user);
+    res.status(201).send(users);
+
   } catch (e) {
     httpError(res, e);
   }
@@ -146,7 +149,9 @@ const actUser = async (req, res) => {
       permissions: body.permissions,
     }
   );
-  res.status(200).send("Usuario actualizado con exito");
+  const users = await User.find();
+  res.status(200).send(users);
+
 };
 
 const actPass = async (req, res) => {
@@ -171,7 +176,9 @@ const actPass = async (req, res) => {
 const deleteUsers = async (req, res) => {
   const { body } = req;
   const del = await User.findOneAndDelete({ _id: body._id });
-  res.status(200).send(del);
+  const users = await User.find();
+  res.status(200).send(users);
+
 };
 
 module.exports = {
