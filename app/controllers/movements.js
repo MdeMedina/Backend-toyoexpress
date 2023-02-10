@@ -74,6 +74,16 @@ const deleteMoves = async (req, res) => {
 const modificarMovimiento = async (req, res) => {
   const { body } = req;
   const filter = body.identificador;
+  let identificador = body.identificador
+  let id = body.id
+  identificador = `${id}-${identificador[2]}${identificador[3]}${identificador[4]}`
+  console.log({
+    efectivo: body.efectivo,
+    zelle: body.zelle,
+    bs: body.bs,
+    change: body.change,
+    dollars: body.dollars,
+  })
   const concepto = body.concepto;
   const monto = body.monto;
   const cuenta = body.cuenta;
@@ -81,6 +91,7 @@ const modificarMovimiento = async (req, res) => {
     const move = await Movimiento.findOneAndUpdate(
       { identificador: filter },
       {
+        identificador,
         cuenta: cuenta,
         concepto: concepto,
         efectivo: body.efectivo,
