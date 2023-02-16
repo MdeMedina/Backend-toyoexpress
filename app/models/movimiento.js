@@ -10,6 +10,7 @@ const Movimiento = mongoose.model('Movimiento', {
     bs: {type: Number},
     change: {type: Number},
     dollars: {type: Number},
+    otro: {type: Number},
     monto: {type: String, required: true},
     fecha: {type: String, required: true},
     name:  {type: String, required: true},
