@@ -174,7 +174,7 @@ const loginUser = async (req, res) => {
       } else {
         res
           .status(403)
-          .send({ errormessage: "ususario y/o contraseña inválida" });
+          .send({ errormessage: "Usuario y/o Contraseña inválida" });
       }
     }
   } catch (err) {
