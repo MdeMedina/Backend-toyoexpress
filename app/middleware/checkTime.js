@@ -2,12 +2,19 @@ const { formatDateHoy, formatDateManana } = require("../helpers/dates/dates");
 const { DateTime } = require("luxon");
 const Time = require("../models/date");
 
-const checkearTime = async (next) => {
+const checkearTime = async (ahora) => {
+  let ahora_mismo = ahora.split("-");
+  ahora_mismo = `${ahora_mismo[0]}-${ahora_mismo[1]}-${ahora_mismo[2]}`;
+  ahora_mismo = ahora_mismo.split("T");
+  ahora_mismo = `${ahora_mismo[0]} ${ahora_mismo[1]}`;
+  ahora_mismo = DateTime.fromSQL(ahora_mismo);
+  // console.log(ahora_mismo);
+
   let malaHora = false;
   let date = await Time.find({});
   date = date[0];
   const { apertura, cierre } = date;
-  const ahora_mismo = DateTime.now().setZone("America/Santiago");
+
   let hoy_cierre;
 
   const hoy = `${formatDateHoy(new Date())} ${apertura}`; // 2022-10-25T10:00
@@ -18,8 +25,8 @@ const checkearTime = async (next) => {
   }
 
   const apertura_final = DateTime.fromSQL(hoy);
+
   const cierre_final = DateTime.fromSQL(hoy_cierre);
-  console.log(ahora_mismo >= cierre_final || ahora_mismo < apertura_final);
 
   if (ahora_mismo >= cierre_final || ahora_mismo < apertura_final) {
     // FUERA DE AQUI
