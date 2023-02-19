@@ -20,21 +20,22 @@ const getHour = async (req, res) => {
     }
   );
 
-  let promResult = client.connect();
-  let check = await promResult.then(async (r) => {
+  try {
+    await client.connect();
     console.log("Connected successfully to server");
     const db = client.db("mydb");
-    let wow = await db.command({ serverStatus: 1 }, (err, result) => {
-      if (err) throw err;
-      console.log(result.localTime);
-    });
+    let wow = await db.command({ serverStatus: 1 });
     let ahora_mismo = await moment(wow.localTime)
       .tz("America/Caracas")
       .format();
-
-    return ahora_mismo;
-  });
-  res.status(200).send({ horaActual: check });
+    res.status(200).send({ horaActual: ahora_mismo });
+  } catch (err) {
+    console.log(err);
+    res.status(500).send("Error de conexión");
+  } finally {
+    // Cerrar la conexión después de completar la consulta a la base de datos
+    await client.close();
+  }
 };
 
 const actNumber = async (req, res) => {
@@ -66,20 +67,22 @@ const actInactive = async (req, res) => {
     }
   );
 
-  let promResult = client.connect();
-  let check = await promResult.then(async (r) => {
+  try {
+    await client.connect();
     console.log("Connected successfully to server");
     const db = client.db("mydb");
-    let wow = await db.command({ serverStatus: 1 }, (err, result) => {
-      if (err) throw err;
-      console.log(result.localTime);
-    });
+    let wow = await db.command({ serverStatus: 1 });
     let ahora_mismo = await moment(wow.localTime)
       .tz("America/Caracas")
       .format();
-
     return ahora_mismo;
-  });
+  } catch (err) {
+    console.log(err);
+    res.status(500).send("Error de conexión");
+  } finally {
+    // Cerrar la conexión después de completar la consulta a la base de datos
+    await client.close();
+  }
   const { body } = req;
   console.log("body", body);
   let actual = check;
@@ -126,20 +129,25 @@ const loginUser = async (req, res) => {
           );
 
           let promResult = client.connect();
-          let check = await promResult.then(async (r) => {
-            console.log("Connected successfully to server");
-            const db = client.db("mydb");
-            let wow = await db.command({ serverStatus: 1 }, (err, result) => {
-              if (err) throw err;
-              console.log(result.localTime);
+          let check = promResult
+            .then(async (r) => {
+              console.log("Connected successfully to server");
+              const db = client.db("mydb");
+              let wow = await db.command({ serverStatus: 1 });
+              let ahora_mismo = await moment(wow.localTime)
+                .tz("America/Caracas")
+                .format();
+              let checkeo = await checkearTime(ahora_mismo);
+              return checkeo;
+            })
+            .then((checkeo) => {
+              // Cerrar la conexión después de completar la consulta a la base de datos
+              return client.close().then(() => checkeo);
+            })
+            .catch((err) => {
+              console.log(err);
+              return null;
             });
-            let ahora_mismo = await moment(wow.localTime)
-              .tz("America/Caracas")
-              .format();
-
-            let checkeo = await checkearTime(ahora_mismo);
-            return checkeo;
-          });
 
           if (check.malaHora == true) {
             res.status(401).json({
