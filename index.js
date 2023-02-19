@@ -28,7 +28,7 @@ app.use(express.static("app"));
 
 let io = new Server(server, {
   cors: {
-    origin: "http://192.168.1.161:3000",
+    origin: "http://front.toyoxpress.com",
     methods: ["GET", "POST", "UPDATE"],
   },
 });
@@ -41,11 +41,11 @@ io.on("connection", (socket) => {
 
   socket.on("join_room", (data) => {
     socket.join(data);
-  })
+  });
 
   socket.on("send_aprove", (data) => {
-    socket.to(data.messageId).emit("receive_aprove", data)
-  })
+    socket.to(data.messageId).emit("receive_aprove", data);
+  });
 });
 
 server.listen(PORT, () => {
