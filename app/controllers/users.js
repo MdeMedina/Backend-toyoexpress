@@ -75,26 +75,23 @@ const actInactive = async (req, res) => {
     let ahora_mismo = await moment(wow.localTime)
       .tz("America/Caracas")
       .format();
-    return ahora_mismo;
+
+    const { body } = req;
+    console.log("body", body);
+    let actual = ahora_mismo; // Esta variable no está definida
+    actual = actual.split("-");
+    actual = `${actual[0]}-${actual[1]}-${actual[2]}`;
+    const act = await User.findOneAndUpdate(
+      { email: body.email },
+      { Inactive: actual }
+    );
+    res.status(200).send(`Tiempo de inactividad actualizado con éxito ${act}`);
   } catch (err) {
     console.log(err);
     res.status(500).send("Error de conexión");
   } finally {
-    // Cerrar la conexión después de completar la consulta a la base de datos
     await client.close();
   }
-  const { body } = req;
-  console.log("body", body);
-  let actual = check;
-  actual = actual.split("-");
-  actual = `${actual[0]}-${actual[1]}-${actual[2]}`;
-  const act = await User.findOneAndUpdate(
-    { email: body.email },
-    {
-      Inactive: actual,
-    }
-  );
-  res.status(200).send(`Tiempo de inactividad actualizado con exito ${act}`);
 };
 
 const actNotificaciones = async (req, res) => {
