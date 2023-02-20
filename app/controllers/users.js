@@ -11,31 +11,17 @@ const authUser = (req, res) => {
   res.send(req.user);
 };
 
-const getHour = async (req, res) => {
-  const client = new MongoClient(
-    "mongodb+srv://MdeMedina:medina225@cluster0.umgq4ca.mongodb.net/auth?retryWrites=true&w=majority",
-    {
-      useNewUrlParser: true,
-      useUnifiedTopology: true,
-    }
-  );
+const horaActual = async () => {
+  let horaActual = new Date();
+  horaActual = await moment(horaActual).tz("America/Caracas").format();
+  horaActual = horaActual.split("-");
+  horaActual = `${horaActual[0]}-${horaActual[1]}-${horaActual[2]}`;
+  return horaActual;
+};
 
-  try {
-    await client.connect();
-    console.log("Connected successfully to server");
-    const db = client.db("mydb");
-    let wow = await db.command({ serverStatus: 1 });
-    let ahora_mismo = await moment(wow.localTime)
-      .tz("America/Caracas")
-      .format();
-    res.status(200).send({ horaActual: ahora_mismo });
-  } catch (err) {
-    console.log(err);
-    res.status(500).send("Error de conexión");
-  } finally {
-    // Cerrar la conexión después de completar la consulta a la base de datos
-    await client.close();
-  }
+const getHour = async (req, res) => {
+  let hora = horaActual();
+  res.status(200).send(hora);
 };
 
 const actNumber = async (req, res) => {
@@ -59,39 +45,13 @@ const getInactive = async (req, res) => {
 };
 
 const actInactive = async (req, res) => {
-  const client = new MongoClient(
-    "mongodb+srv://MdeMedina:medina225@cluster0.umgq4ca.mongodb.net/auth?retryWrites=true&w=majority",
-    {
-      useNewUrlParser: true,
-      useUnifiedTopology: true,
-    }
+  let { body } = req;
+  let hora = horaActual();
+  const act = await User.findOneAndUpdate(
+    { email: body.email },
+    { Inactive: hora }
   );
-
-  try {
-    await client.connect();
-    console.log("Connected successfully to server");
-    const db = client.db("mydb");
-    let wow = await db.command({ serverStatus: 1 });
-    let ahora_mismo = await moment(wow.localTime)
-      .tz("America/Caracas")
-      .format();
-
-    const { body } = req;
-    console.log("body", body);
-    let actual = ahora_mismo; // Esta variable no está definida
-    actual = actual.split("-");
-    actual = `${actual[0]}-${actual[1]}-${actual[2]}`;
-    const act = await User.findOneAndUpdate(
-      { email: body.email },
-      { Inactive: actual }
-    );
-    res.status(200).send(`Tiempo de inactividad actualizado con éxito ${act}`);
-  } catch (err) {
-    console.log(err);
-    res.status(500).send("Error de conexión");
-  } finally {
-    await client.close();
-  }
+  res.status(200).send(`Tiempo de inactividad actualizado con éxito ${act}`);
 };
 
 const actNotificaciones = async (req, res) => {
@@ -117,35 +77,8 @@ const loginUser = async (req, res) => {
       const isMatch = await bcrypt.compare(body.password, user.password);
       if (isMatch) {
         if (user.permissions.obviarIngreso === false) {
-          const client = new MongoClient(
-            "mongodb+srv://MdeMedina:medina225@cluster0.umgq4ca.mongodb.net/auth?retryWrites=true&w=majority",
-            {
-              useNewUrlParser: true,
-              useUnifiedTopology: true,
-            }
-          );
-
-          let promResult = client.connect();
-          let check = promResult
-            .then(async (r) => {
-              console.log("Connected successfully to server");
-              const db = client.db("mydb");
-              let wow = await db.command({ serverStatus: 1 });
-              let ahora_mismo = await moment(wow.localTime)
-                .tz("America/Caracas")
-                .format();
-              let checkeo = await checkearTime(ahora_mismo);
-              return checkeo;
-            })
-            .then((checkeo) => {
-              // Cerrar la conexión después de completar la consulta a la base de datos
-              return client.close().then(() => checkeo);
-            })
-            .catch((err) => {
-              console.log(err);
-              return null;
-            });
-
+          let ahora_mismo = horaActual();
+          let check = checkearTime(ahora_mismo);
           if (check.malaHora == true) {
             res.status(401).json({
               errormessage: `No se puede ingresar, el sitio abre de nuevo a las ${check.apertura}, por favor intentelo de nuevo a esa hora`,
