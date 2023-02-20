@@ -20,8 +20,9 @@ const horaActual = async () => {
 };
 
 const getHour = async (req, res) => {
-  let hora = horaActual();
-  res.status(200).send(hora);
+  let hora = await horaActual();
+  console.log(hora);
+  res.status(200).send({ horaActual: hora });
 };
 
 const actNumber = async (req, res) => {
@@ -46,7 +47,7 @@ const getInactive = async (req, res) => {
 
 const actInactive = async (req, res) => {
   let { body } = req;
-  let hora = horaActual();
+  let hora = await horaActual();
   const act = await User.findOneAndUpdate(
     { email: body.email },
     { Inactive: hora }
@@ -77,8 +78,8 @@ const loginUser = async (req, res) => {
       const isMatch = await bcrypt.compare(body.password, user.password);
       if (isMatch) {
         if (user.permissions.obviarIngreso === false) {
-          let ahora_mismo = horaActual();
-          let check = checkearTime(ahora_mismo);
+          let ahora_mismo = await horaActual();
+          let check = await checkearTime(ahora_mismo);
           if (check.malaHora == true) {
             res.status(401).json({
               errormessage: `No se puede ingresar, el sitio abre de nuevo a las ${check.apertura}, por favor intentelo de nuevo a esa hora`,
