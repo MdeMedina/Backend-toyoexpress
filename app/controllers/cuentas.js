@@ -18,6 +18,7 @@ const actCuenta = async (req, res) => {
       label: body.name,
       value: body.name,
       color: body.color,
+      saldo: body.saldo,
     }
   );
   if (!act) {
@@ -38,6 +39,7 @@ const crearCuenta = async (req, res) => {
         label: body.name,
         value: body.name,
         color: body.color,
+        saldo: body.saldo,
       });
       res.status(201).send(account);
     }
