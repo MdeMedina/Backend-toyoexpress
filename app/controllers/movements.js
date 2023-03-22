@@ -126,7 +126,7 @@ const modificarStatus = async (req, res) => {
   const filter = body.identificador;
 
   const isVale = await Movimiento.findOne({ vale: body.vale });
-  if (isVale) {
+  if (isVale && !isVale.disabled) {
     res.status(403).send("Este numero de aprobacion ya existe");
   } else {
     const move = await Movimiento.findOneAndUpdate(
