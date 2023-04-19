@@ -83,15 +83,9 @@ const modificarMovimiento = async (req, res) => {
   const { body } = req;
   const filter = body.identificador;
   let identificador = body.identificador;
+  identificador = identificador.split("-")[1];
   let id = body.id;
-  identificador = `${id}-${identificador[2]}${identificador[3]}${identificador[4]}`;
-  console.log({
-    efectivo: body.efectivo,
-    zelle: body.zelle,
-    bs: body.bs,
-    change: body.change,
-    dollars: body.dollars,
-  });
+  identificador = `${id}-${identificador}`;
   const concepto = body.concepto;
   const monto = body.monto;
   const cuenta = body.cuenta;
