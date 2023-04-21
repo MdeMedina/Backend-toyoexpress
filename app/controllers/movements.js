@@ -58,7 +58,7 @@ const crearMovimiento = async (req, res) => {
   });
   res
     .status(201)
-    .send({ message: "Movimiento creado con exito", moves, status: 200 });
+    .send({ message: "Movimiento creado con exito", cuenta: cuenta, moves, status: 200 });
 };
 
 const deleteMoves = async (req, res) => {
