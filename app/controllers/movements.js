@@ -26,7 +26,9 @@ const crearMovimiento = async (req, res) => {
   let aFecha = "";
   const cuenta = body.cuenta;
   let vale = "";
+  let pase = "";
   if (cuenta == "CajaChica") {
+    pase = "si entre en caja chica";
     vale = identificador;
     aFecha = fecha;
   }
@@ -55,9 +57,33 @@ const crearMovimiento = async (req, res) => {
   movimientos.map((n) => {
     moves.push(n);
   });
-  res
-    .status(201)
-    .send({ message: "Movimiento creado con exito", moves, status: 200 });
+  res.status(201).send({
+    message: "Movimiento creado con exito",
+    move: {
+      identificador: identificador,
+      cuenta: cuenta,
+      concepto: concepto,
+      efectivo: body.efectivo,
+      zelle: body.zelle,
+      bs: body.bs,
+      change: body.change,
+      dollars: body.dollars,
+      otro: body.otro,
+      monto: monto,
+      fecha: fecha,
+      name: name,
+      afecha: aFecha,
+      email: body.email,
+      vale: vale,
+      messageId: body.messageId,
+      disabled: false,
+    },
+    pase,
+    vale,
+    cuenta,
+    moves,
+    status: 200,
+  });
 };
 
 const deleteMoves = async (req, res) => {
