@@ -26,7 +26,6 @@ const crearMovimiento = async (req, res) => {
   let aFecha = "";
   const cuenta = body.cuenta;
   let vale = "";
-  console.log(cuenta);
   if (cuenta == "CajaChica") {
     vale = identificador;
     aFecha = fecha;
