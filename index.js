@@ -17,6 +17,9 @@ app.use(cors());
 app.use("/users", require("./app/routes/users"));
 app.use(express.static("app"));
 
+app.use("/excel", require("./app/routes/excel"));
+app.use(express.static("app"));
+
 app.use("/moves", require("./app/routes/movements"));
 app.use(express.static("app"));
 
