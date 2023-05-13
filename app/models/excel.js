@@ -12,21 +12,19 @@ const ExcelProductos = mongoose.model("Excel", {
   "Precio Minimo": { type: Number, required: true },
 });
 
-const ExcelClientes = (mongoose.model =
-  ("Clientes",
-  {
-    Código: { type: String, required: true },
-    Nombre: { type: String, required: true },
-    "Persona Contacto": { type: String, required: true },
-    Teléfonos: { type: String, required: true },
-    Fax: { type: String, required: true },
-    "Correo Electrónico": { type: String, required: true },
-    "Limite Credito": { type: String, required: true },
-    "Dias Credito": { type: String, required: true },
-    "Credito Disponible": { type: String, required: true },
-    "Precio de Venta": { type: String, required: true },
-    "Ultima Venta a Contado": { type: String, required: true },
-    "Ultima Venta a Crédito": { type: String, required: true },
-  }));
+const ExcelClientes = mongoose.model("Clientes", {
+  Código: { type: String, required: true },
+  Nombre: { type: String, required: true },
+  "Persona Contacto": { type: String, required: true },
+  Teléfonos: { type: String, required: true },
+  Fax: { type: String, required: true },
+  "Correo Electrónico": { type: String, required: true },
+  "Limite Credito": { type: String, required: true },
+  "Dias Credito": { type: String, required: true },
+  "Credito Disponible": { type: String, required: true },
+  "Precio de Venta": { type: String, required: true },
+  "Ultima Venta a Contado": { type: String, required: true },
+  "Ultima Venta a Crédito": { type: String, required: true },
+});
 
 module.exports = { ExcelProductos, ExcelClientes };
