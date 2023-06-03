@@ -8,8 +8,8 @@ const {
 const router = express.Router();
 
 router.get("/products", getExcelProductos);
-router.put("/clients", getExcelClientes);
-router.post("/updateProducts", updateExcelProductos);
-router.delete("/updateClients", updateExcelClientes);
+router.get("/clients", getExcelClientes);
+router.put("/updateProducts", updateExcelProductos);
+router.put("/updateClients", updateExcelClientes);
 
 module.exports = router;

@@ -22,7 +22,7 @@ const updateExcelProductos = async (req, res) => {
   const remainingObjects = Object.values(map2);
   const finalArray = newArray1.concat(remainingObjects);
 
-  Excel.deleteMany({}, function (err) {
+  ExcelProductos.deleteMany({}, function (err) {
     if (err) {
       console.log(err);
     } else {
@@ -30,7 +30,7 @@ const updateExcelProductos = async (req, res) => {
     }
   });
 
-  Excel.insertMany(finalArray);
+  ExcelProductos.insertMany(finalArray);
 
   if (!finalArray) {
     res.status(400).send({ message: "Ha ocurrido un error!" });
@@ -41,6 +41,7 @@ const updateExcelProductos = async (req, res) => {
 
 const getExcelClientes = async (req, res) => {
   let excel = await ExcelClientes.find({});
+
   if (excel == []) {
     res.status(404).send({ existencia: false });
   } else {
@@ -71,7 +72,7 @@ const updateExcelClientes = async (req, res) => {
   const remainingObjects = Object.values(map2);
   const finalArray = newArray1.concat(remainingObjects);
 
-  Excel.deleteMany({}, function (err) {
+  ExcelClientes.deleteMany({}, function (err) {
     if (err) {
       console.log(err);
     } else {
@@ -79,7 +80,7 @@ const updateExcelClientes = async (req, res) => {
     }
   });
 
-  Excel.insertMany(finalArray);
+  ExcelClientes.insertMany(finalArray);
 
   if (!finalArray) {
     res.status(400).send({ message: "Ha ocurrido un error!" });
@@ -89,7 +90,8 @@ const updateExcelClientes = async (req, res) => {
 };
 
 const getExcelProductos = async (req, res) => {
-  let excel = await Excel.find({});
+  let excel = await ExcelProductos.find({});
+
   if (excel == []) {
     res.status(404).send({ existencia: false });
   } else {
