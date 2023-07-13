@@ -32,7 +32,7 @@ app.use(express.static("app"));
 
 let io = new Server(server, {
   cors: {
-    origin: "http://front.toyoxpress.com/",
+    origin: "http://front.toyoxpress.com",
     methods: ["GET", "POST", "UPDATE"],
   },
 });
