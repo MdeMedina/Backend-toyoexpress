@@ -21,7 +21,6 @@ const horaActual = async () => {
 
 const getHour = async (req, res) => {
   let hora = await horaActual();
-  console.log(hora);
   res.status(200).send({ horaActual: hora });
 };
 
@@ -41,7 +40,7 @@ const actNumber = async (req, res) => {
 const getInactive = async (req, res) => {
   const { body } = req;
   const user = await User.findOne({ email: body.email });
-  console.log(user);
+
   res.status(200).send({ hour: user.Inactive });
 };
 
@@ -70,6 +69,7 @@ const loginUser = async (req, res) => {
   const { body } = req;
   try {
     const user = await User.findOne({ email: body.email });
+    console.log(user);
     if (!user) {
       res
         .status(403)
@@ -85,11 +85,13 @@ const loginUser = async (req, res) => {
               errormessage: `No se puede ingresar, el sitio abre de nuevo a las ${check.apertura}, por favor intentelo de nuevo a esa hora`,
             });
           } else {
+            console.log(user.vendedor);
             const signed = signToken(user._id);
             res.status(200).json({
               message:
                 "El usuario a ingresado correctamente, sera redirigido a la pagina de inicio",
               key: signed,
+              vendedor: user.vendedor,
               name: user.username,
               permissions: user.permissions,
               email: user.email,
@@ -104,6 +106,7 @@ const loginUser = async (req, res) => {
               "El usuario a ingresado correctamente, sera redirigido a la pagina de inicio",
             key: signed,
             name: user.username,
+            vendedor: user.vendedor,
             permissions: user.permissions,
             email: user.email,
             cantidadM: user.cantidadM,
@@ -146,6 +149,7 @@ const registerUser = async (req, res) => {
       cantidadM: 10,
       messageId: users.length + 1,
       notificaciones: [],
+      vendedor: body.vendedor,
     });
     const signed = signToken(user._id);
     res.status(201).send(users);
@@ -156,12 +160,14 @@ const registerUser = async (req, res) => {
 
 const actUser = async (req, res) => {
   const { body } = req;
+  console.log(body);
   const act = await User.findOneAndUpdate(
     { _id: body._id },
     {
       email: body.email,
       username: body.username,
       permissions: body.permissions,
+      vendedor: body.vendedor,
     }
   );
   const users = await User.find();
