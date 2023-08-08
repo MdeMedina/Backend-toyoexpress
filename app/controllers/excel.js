@@ -21,8 +21,6 @@ const updateExcelProductos = async (req, res) => {
   const array1 = body;
   const array2 = await ExcelProductos.find({});
 
-  const finalArray = combinarArraysSinRepeticiones(array1, array2);
-
   ExcelProductos.deleteMany({}, function (err) {
     if (err) {
       console.log(err);
@@ -31,9 +29,9 @@ const updateExcelProductos = async (req, res) => {
     }
   });
 
-  ExcelProductos.insertMany(finalArray);
+  ExcelProductos.insertMany(array1);
 
-  if (!finalArray) {
+  if (!array1) {
     res.status(400).send({ message: "Ha ocurrido un error!" });
   } else {
     res.status(200).send({ message: "Excel Actualizado con éxito!" });
@@ -59,8 +57,6 @@ const updateExcelClientes = async (req, res) => {
   const array1 = body;
   const array2 = await ExcelClientes.find({});
 
-  const finalArray = combinarArraysSinRepeticiones(array1, array2);
-
   ExcelClientes.deleteMany({}, function (err) {
     if (err) {
       console.log(err);
@@ -69,9 +65,9 @@ const updateExcelClientes = async (req, res) => {
     }
   });
 
-  ExcelClientes.insertMany(finalArray);
+  ExcelClientes.insertMany(array1);
 
-  if (!finalArray) {
+  if (!array1) {
     res.status(400).send({ message: "Ha ocurrido un error!" });
   } else {
     res.status(200).send({ message: "Excel Actualizado con éxito!" });
