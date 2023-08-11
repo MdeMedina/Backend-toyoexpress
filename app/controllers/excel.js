@@ -1,4 +1,5 @@
 const { ExcelProductos, ExcelClientes } = require("../models/excel");
+const Fecha = require("../models/fecha");
 
 function combinarArraysSinRepeticiones(array1, array2) {
   const codigosArray1 = array1.map((obj) => obj.Código);
@@ -25,10 +26,11 @@ const updateExcelProductos = async (req, res) => {
     if (err) {
       console.log(err);
     } else {
-      console.log("Todos los documentos de la colección han sido eliminados.");
+      console.log(
+        "Todos los documentos de la colección de productos han sido eliminados."
+      );
     }
   });
-
   ExcelProductos.insertMany(array1);
 
   if (!array1) {
@@ -36,6 +38,54 @@ const updateExcelProductos = async (req, res) => {
   } else {
     res.status(200).send({ message: "Excel Actualizado con éxito!" });
   }
+};
+
+const updateStock = async (req, res) => {
+  const { body } = req;
+  let eq = await ExcelProductos.findOne({ Código: body.codigo });
+  console.log(eq["Existencia Actual"], body.stock);
+  let stock = eq["Existencia Actual"] - body.stock;
+
+  await ExcelProductos.findOneAndUpdate(
+    { Código: body.codigo },
+    { "Existencia Actual": stock },
+    { new: true }
+  ).then((updateProduct) => {
+    res.status(200).send({ message: "Excel Actualizado con éxito!" });
+  });
+};
+
+const fechaAct = async (req, res) => {
+  try {
+    const { body } = req;
+    let arr = body;
+
+    // Elimina todos los documentos de la colección "Fecha"
+    Fecha.deleteMany({}, function (err) {
+      if (err) {
+        console.log(err);
+      } else {
+        console.log(
+          "Todos los documentos de la colección de fecha han sido eliminados."
+        );
+      }
+    });
+
+    // Inserta los nuevos documentos en la colección "Fecha"
+    const fecha = await Fecha.insertMany(arr);
+
+    console.log("Datos actualizados correctamente.");
+    res.send({ fecha });
+  } catch (error) {
+    console.error("Error al actualizar los datos:", error);
+    res.status(500).send("Error al actualizar los datos");
+  }
+};
+
+const fechaget = async (req, res) => {
+  let fecha = await Fecha.find();
+  console.log(fecha[0].fecha);
+  res.send({ fecha: fecha[0].fecha });
 };
 
 const getExcelClientes = async (req, res) => {
@@ -104,4 +154,7 @@ module.exports = {
   updateExcelClientes,
   getExcelClientes,
   getCompleteExcelProductos,
+  updateStock,
+  fechaAct,
+  fechaget,
 };
