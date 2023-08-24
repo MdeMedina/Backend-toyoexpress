@@ -9,7 +9,9 @@ router.post("/sendMail", async (req, res) => {
   const filename = body.filename;
   const email = body.email;
   const nota = body.nota;
-  let send = await emailer.sendMail(filename, email, nota);
+  const corr = body.corr;
+
+  let send = await emailer.sendMail(filename, email, nota, corr);
   console.log(send);
   res.send(send);
 });
