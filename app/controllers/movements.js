@@ -115,23 +115,49 @@ const modificarMovimiento = async (req, res) => {
   const monto = body.monto;
   const cuenta = body.cuenta;
   const fecha = body.fecha;
-  const move = await Movimiento.findOneAndUpdate(
-    { identificador: filter },
-    {
-      identificador,
-      cuenta: cuenta,
-      concepto: concepto,
-      efectivo: body.efectivo,
-      zelle: body.zelle,
-      bs: body.bs,
-      change: body.change,
-      dollars: body.dollars,
-      otro: body.otro,
-      monto: monto,
-      fecha: fecha,
-    },
-    { new: true }
-  );
+
+  if (cuenta == "CajaChica") {
+    pase = "si entre en caja chica";
+    vale = identificador;
+    aFecha = fecha;
+    const move = await Movimiento.findOneAndUpdate(
+      { identificador: filter },
+      {
+        identificador,
+        cuenta: cuenta,
+        concepto: concepto,
+        efectivo: body.efectivo,
+        zelle: body.zelle,
+        bs: body.bs,
+        change: body.change,
+        dollars: body.dollars,
+        otro: body.otro,
+        vale: vale,
+        monto: monto,
+        fecha: fecha,
+      },
+      { new: true }
+    );
+  } else {
+    const move = await Movimiento.findOneAndUpdate(
+      { identificador: filter },
+      {
+        identificador,
+        cuenta: cuenta,
+        concepto: concepto,
+        efectivo: body.efectivo,
+        zelle: body.zelle,
+        bs: body.bs,
+        change: body.change,
+        dollars: body.dollars,
+        otro: body.otro,
+        monto: monto,
+        fecha: fecha,
+      },
+      { new: true }
+    );
+  }
+
   const movimientos = await Movimiento.find({});
   let moves = [];
   movimientos.map((n) => {
