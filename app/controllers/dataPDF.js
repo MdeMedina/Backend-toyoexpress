@@ -1,10 +1,12 @@
 const dataPDF = require("../models/dataPDF");
 
 const crearPDF = async (req, res) => {
-  const { body } = req;
+  let data = await dataPDF.find({});
+  data = data[data.length - 1].cor;
+  data = data + 1;
   try {
     const pdf = await dataPDF.create({
-      cor: body.cor,
+      cor: data,
     });
     res.status(201).send(pdf);
   } catch (e) {
