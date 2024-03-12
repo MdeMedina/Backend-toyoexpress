@@ -528,9 +528,9 @@ if (conditionSaldo) {
       $and: conditionSaldo.pago.map(item => ({ [item]: { $gt: 1 } }))
     };
   }
-  const inicio = DateTime.fromISO(fechas.from).startOf("day").toUTC();
-  const final = DateTime.fromISO(fechas.to).endOf("day").toUTC();
-  const fecha = { $gte: inicio.toISO(), $lte: final.toISO() };
+const inicio = DateTime.fromISO(fechas.from).toUTC();
+const final = DateTime.fromISO(fechas.to).toUTC();
+const fecha = { $gte: inicio.toISO(), $lte: final.toISO() };
  let vales
 
     if (condition.status === "Aprove") {
