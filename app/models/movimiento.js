@@ -21,7 +21,7 @@ const Movimiento = mongoose.model("Movimiento", {
   dollars: { type: Number },
   otro: { type: Number },
   monto: { type: String, required: true },
-  fecha: { type: String, required: true },
+  fecha: { type: Date, required: true },
   name: { type: String, required: true },
   vale: { type: String },
   aFecha: { type: String },

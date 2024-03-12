@@ -84,22 +84,20 @@ const fechaAct = async (req, res) => {
 
 const fechaget = async (req, res) => {
   let fecha = await Fecha.find();
-  console.log(fecha[0].fecha);
+  console.log(fecha[0]);
   res.send({ fecha: fecha[0].fecha });
 };
 
-const getExcelClientes = async (req, res) => {
-  const { body } = req;
-  console.log(body);
-  let excel = await ExcelClientes.find({
-    Nombre: new RegExp(body.Nombre, "i"),
-  });
-
-  if (excel == []) {
-    res.status(404).send({ existencia: false });
-  } else {
-    res.status(200).send({ existencia: "Lista de Clientes", excel });
-  }
+const getExcelClientes = async (condition, page) => {
+let codigo = condition ? { Nombre: new RegExp(condition.Nombre, "i")} : {};
+  let excel = await ExcelClientes.find(codigo)  
+      .sort({ _id: -1 })
+      .skip(page)
+      .limit(parseInt(process.env.PAGINA))
+      .lean()
+      .exec();
+    const total = await ExcelClientes.countDocuments(condition);
+  return { total, excel, };
 };
 
 const updateExcelClientes = async (req, res) => {
@@ -124,18 +122,16 @@ const updateExcelClientes = async (req, res) => {
   }
 };
 
-const getExcelProductos = async (req, res) => {
-  const { body } = req;
-  console.log(body);
-  let excel = await ExcelProductos.find({
-    Código: new RegExp(body.Código, "i"),
-  });
-
-  if (excel == []) {
-    res.status(404).send({ existencia: false });
-  } else {
-    res.status(200).send({ existencia: "Lista de Clientes", excel });
-  }
+const getExcelProductos = async (condition, page) => {
+let codigo = condition ? { Código: new RegExp(condition.Código, "i")} : {};
+  let excel = await ExcelProductos.find(codigo)  
+      .sort({ _id: -1 })
+      .skip(page)
+      .limit(parseInt(process.env.PAGINA))
+      .lean()
+      .exec();
+    const total = await ExcelProductos.countDocuments(condition);
+  return { total, excel, };
 };
 
 const getCompleteExcelProductos = async (req, res) => {
