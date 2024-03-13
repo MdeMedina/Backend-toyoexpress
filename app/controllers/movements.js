@@ -338,7 +338,6 @@ const convertirFechas = async () => {
 
 
 const sumarRestarMontos = async (finalCondition, inicio, final) => {
-  console.log('logeo', finalCondition)
   try {
     let matchStage
     // Construir la etapa de coincidencia (match) para aplicar las condiciones
@@ -487,6 +486,7 @@ fechaFin.total = fechaFin.saldo + fechaFin.cajaChica
 
 
 const getMoves = async (condition, page, cantidad, fechas, conditionSaldo) => {
+  console.log('bienvenido a casa maestro')
   let conditionWithArrays = {};
   let conditionSaldoWithArrays = {};
 
