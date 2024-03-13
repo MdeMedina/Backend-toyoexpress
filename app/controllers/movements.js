@@ -448,7 +448,7 @@ if (conditionSaldo) {
     return acc;
   }, {});
 }
-  const preInicio = DateTime.fromISO('2023/01/01').startOf("day").toUTC();
+const preInicio = DateTime.fromISO('2023-01-01').startOf("day").toUTC();
   const inicio = DateTime.fromISO(fechas.from).startOf("day").toUTC();
   const final = DateTime.fromISO(fechas.to).endOf("day").toUTC();
   const fecha = { $gte: inicio.toISO(), $lte: final.toISO() };
