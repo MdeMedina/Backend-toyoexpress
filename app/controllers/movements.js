@@ -214,7 +214,7 @@ const deleteMoves = async (req, res) => {
 
 const modificarMovimiento = async (req, res) => {
   const { body } = req;
-  console.log(body.fecha)
+
   const filter = body.identificador;
   let identificador = body.identificador;
   identificador = identificador.split("-")[1];
@@ -338,7 +338,6 @@ const convertirFechas = async () => {
 
 
 const sumarRestarMontos = async (finalCondition, inicio, final) => {
-  console.log('logeo', finalCondition)
   try {
     let matchStage
     // Construir la etapa de coincidencia (match) para aplicar las condiciones
@@ -424,7 +423,7 @@ const groupStage = {
 const generarPDFData = async (condition, fechas, conditionSaldo) => {
  let conditionWithArrays = {};
   let conditionSaldoWithArrays = {};
-  console.log(conditionSaldo)
+
 
   // Convertimos la condición para que cualquier valor que sea un string o número se convierta en un array con un solo elemento
   if (condition) {
@@ -441,7 +440,7 @@ const generarPDFData = async (condition, fechas, conditionSaldo) => {
 if (conditionSaldo) {
   conditionSaldoWithArrays = Object.entries(conditionSaldo).reduce((acc, [key, value]) => {
     if (Array.isArray(value) && key !== "pago") {
-      console.log(key)
+
       acc[key] = { $in: value }; // Utilizar $in si el valor es un array
     } else if (key !== "status" && key !== "pago") {
       acc[key] = value; // Mantener el valor tal como está si no es un array
@@ -487,6 +486,7 @@ fechaFin.total = fechaFin.saldo + fechaFin.cajaChica
 
 
 const getMoves = async (condition, page, cantidad, fechas, conditionSaldo) => {
+
   let conditionWithArrays = {};
   let conditionSaldoWithArrays = {};
 
@@ -505,7 +505,7 @@ const getMoves = async (condition, page, cantidad, fechas, conditionSaldo) => {
 if (conditionSaldo) {
   conditionSaldoWithArrays = Object.entries(conditionSaldo).reduce((acc, [key, value]) => {
     if (Array.isArray(value) && key !== "pago") {
-      console.log(key)
+
       acc[key] = { $in: value }; // Utilizar $in si el valor es un array
     } else if (key !== "status" && key !== "pago") {
       acc[key] = value; // Mantener el valor tal como está si no es un array
@@ -535,7 +535,7 @@ inicio.setUTCSeconds(0);
 inicio.setUTCMilliseconds(0);
 const final = DateTime.fromISO(fechas.to).endOf("day").toUTC();
 const fecha = { $gte: inicio, $lte: final.toISO() };
-console.log(fecha);
+
  let vales
 
     if (condition.status === "Aprove") {
