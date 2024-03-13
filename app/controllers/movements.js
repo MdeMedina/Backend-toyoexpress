@@ -486,7 +486,6 @@ fechaFin.total = fechaFin.saldo + fechaFin.cajaChica
 
 
 const getMoves = async (condition, page, cantidad, fechas, conditionSaldo) => {
-
   let conditionWithArrays = {};
   let conditionSaldoWithArrays = {};
 
