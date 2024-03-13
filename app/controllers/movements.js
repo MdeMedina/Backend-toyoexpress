@@ -208,16 +208,13 @@ const deleteMoves = async (req, res) => {
     },
     { new: true }
   );
-  const movimientos = await Movimiento.find({});
-  let moves = [];
-  movimientos.map((n) => {
-    moves.push(n);
-  });
-  res.status(200).send({ moves, status: 200 });
+
+  res.status(200).send({ status: 200 });
 };
 
 const modificarMovimiento = async (req, res) => {
   const { body } = req;
+  console.log(body.fecha)
   const filter = body.identificador;
   let identificador = body.identificador;
   identificador = identificador.split("-")[1];
@@ -226,7 +223,7 @@ const modificarMovimiento = async (req, res) => {
   const concepto = body.concepto;
   const monto = body.monto;
   const cuenta = body.cuenta;
-  const fecha = body.fecha;
+  const fecha = formatearFecha(body.fecha);
 
   if (cuenta == "CajaChica") {
     pase = "si entre en caja chica";
@@ -269,13 +266,7 @@ const modificarMovimiento = async (req, res) => {
       { new: true }
     );
   }
-
-  const movimientos = await Movimiento.find({});
-  let moves = [];
-  movimientos.map((n) => {
-    moves.push(n);
-  });
-  res.status(200).send({ moves, status: 200 });
+  res.status(200).send({ status: 200 });
 };
 
 const modificarStatus = async (req, res) => {
@@ -349,14 +340,21 @@ const convertirFechas = async () => {
 const sumarRestarMontos = async (finalCondition, inicio, final) => {
   console.log('logeo', finalCondition)
   try {
+    let matchStage
     // Construir la etapa de coincidencia (match) para aplicar las condiciones
-    const matchStage = { $match: {
-            fecha: {
-                $gte: new Date (inicio), // Filtrar fechas que sean mayores o iguales a startDate
-                $lte: new Date (final)    // Filtrar fechas que sean menores o iguales a endDate
-            }, 
-            ...finalCondition
-        }, };
+    if (inicio && final) {
+      matchStage = { $match: {
+             fecha: {
+                 $gte: new Date (inicio), // Filtrar fechas que sean mayores o iguales a startDate
+                 $lte: new Date (final)    // Filtrar fechas que sean menores o iguales a endDate
+             }, 
+             ...finalCondition
+         }, };
+    } else {
+            matchStage = { $match: {
+             ...finalCondition
+         }, };
+    }
 
     // Construir la etapa de proyecto (project) para extraer solo las claves que necesitamos (identificador y monto)
     const projectStage = {
@@ -460,10 +458,12 @@ if (conditionSaldo) {
 
   const finalConditionSaldo = {
     ...conditionSaldoWithArrays,
+    disabled: false,
   }
   const finalCondition = {
     ...conditionSaldoWithArrays,
     ...vales,
+    disabled: false,
     fecha
   };
 
@@ -489,7 +489,6 @@ fechaFin.total = fechaFin.saldo + fechaFin.cajaChica
 const getMoves = async (condition, page, cantidad, fechas, conditionSaldo) => {
   let conditionWithArrays = {};
   let conditionSaldoWithArrays = {};
-  console.log(conditionSaldo)
 
   // Convertimos la condición para que cualquier valor que sea un string o número se convierta en un array con un solo elemento
   if (condition) {
@@ -528,9 +527,15 @@ if (conditionSaldo) {
       $and: conditionSaldo.pago.map(item => ({ [item]: { $gt: 1 } }))
     };
   }
-const inicio = DateTime.fromISO(fechas.from).toUTC();
-const final = DateTime.fromISO(fechas.to).toUTC();
-const fecha = { $gte: inicio.toISO(), $lte: final.toISO() };
+let inicio = DateTime.fromISO(fechas.from).startOf("day").toUTC();
+inicio = new Date(inicio);
+inicio.setUTCHours(0);
+inicio.setUTCMinutes(0);
+inicio.setUTCSeconds(0);
+inicio.setUTCMilliseconds(0);
+const final = DateTime.fromISO(fechas.to).endOf("day").toUTC();
+const fecha = { $gte: inicio, $lte: final.toISO() };
+console.log(fecha);
  let vales
 
     if (condition.status === "Aprove") {
@@ -548,11 +553,13 @@ const fecha = { $gte: inicio.toISO(), $lte: final.toISO() };
     ...conditionSaldoWithArrays,
     ...aditionalConditionSaldo,
     ...vales,
+    disabled: false,
   }
   const finalCondition = {
     ...conditionWithArrays,
     ...aditionalCondition,
     ...vales,
+    disabled: false,
     fecha
   };
 
@@ -566,7 +573,7 @@ const fecha = { $gte: inicio.toISO(), $lte: final.toISO() };
 
 
 // Realizacion cambio de movimientos a documento fecha
-let vuelta = await sumarRestarMontos(finalConditionSaldo, inicio.toISO(), final.toISO());
+let vuelta = await sumarRestarMontos(finalConditionSaldo);
 
   const total = await Movimiento.countDocuments(finalCondition);
   return {movimientos, total, ...vuelta}
