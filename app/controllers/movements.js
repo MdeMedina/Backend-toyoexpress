@@ -561,7 +561,10 @@ const fecha = { $gte: inicio, $lte: final.toISO() };
     disabled: false,
     fecha
   };
-
+ if (sort.fecha) {
+  sort = { ...sort, _id: sort.fecha}
+  console.log(sort)
+ }
 
   const movimientos = await Movimiento.find(finalCondition)
     .sort(sort)
