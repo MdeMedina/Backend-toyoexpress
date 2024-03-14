@@ -468,7 +468,7 @@ const preInicio = DateTime.fromISO('2023-01-01').startOf("day").toUTC();
 
 
   const movimientos = await Movimiento.find(finalCondition)
-    .sort({ _id: -1 })
+    .sort({ _id: 1 })
     .lean()
     .exec();
 
@@ -485,7 +485,7 @@ fechaFin.total = fechaFin.saldo + fechaFin.cajaChica
 
 
 
-const getMoves = async (condition, page, cantidad, fechas, conditionSaldo) => {
+const getMoves = async (condition, page, cantidad, fechas, conditionSaldo, sort) => {
   let conditionWithArrays = {};
   let conditionSaldoWithArrays = {};
 
@@ -564,7 +564,7 @@ const fecha = { $gte: inicio, $lte: final.toISO() };
 
 
   const movimientos = await Movimiento.find(finalCondition)
-    .sort({ _id: -1 })
+    .sort(sort)
     .skip(page)
     .limit(parseInt(cantidad))
     .lean()
