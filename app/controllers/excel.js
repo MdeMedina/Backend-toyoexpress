@@ -83,7 +83,7 @@ const fechaAct = async (req, res) => {
 };
 
 const fechaget = async (req, res) => {
-  let fecha = await Fecha.find();
+  let fecha = await Fecha.find({});
   console.log(fecha[0]);
   res.send({ fecha: fecha[0].fecha });
 };
