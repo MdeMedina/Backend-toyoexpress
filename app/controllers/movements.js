@@ -485,7 +485,7 @@ fechaFin.total = fechaFin.saldo + fechaFin.cajaChica
 
 
 
-const getMoves = async (condition, page, cantidad, fechas, conditionSaldo, sort) => {
+const getMoves = async (condition, page, cantidad, fechas, conditionSaldo, sort, vm, nm) => {
   let conditionWithArrays = {};
   let conditionSaldoWithArrays = {};
 
@@ -525,6 +525,10 @@ if (conditionSaldo) {
     aditionalConditionSaldo = {
       $and: conditionSaldo.pago.map(item => ({ [item]: { $gt: 1 } }))
     };
+  }
+
+  if (vm === false) {
+    conditionWithArrays.name = nm
   }
 let inicio = DateTime.fromISO(fechas.from).startOf("day").toUTC();
 inicio = new Date(inicio);

@@ -62,12 +62,12 @@ router.post("/PDF", async (req, res) => {
 });
 router.post("/", async (req, res) => {
       try {
-      const {condition, pagina, cantidad, fechas, sort} = req.body;
+      const {condition, pagina, cantidad, fechas, sort, vm, nm} = req.body;
       let conditionOld = applyRegExpConditionSaldo(condition)
       let page = pagina ? pagina : 1;
       let conditionreg = applyRegExpCondition(condition)
       page = page * parseInt(cantidad) - parseInt(cantidad);
-      const datos = await getMoves(conditionreg, page, cantidad, fechas, conditionOld, sort);
+      const datos = await getMoves(conditionreg, page, cantidad, fechas, conditionOld, sort, vm, nm);
       return res.json(datos);
     } catch (error) {
       return res.json({ errorMessage: error.message });
