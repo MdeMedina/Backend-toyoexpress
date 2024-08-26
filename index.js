@@ -32,12 +32,18 @@ app.use(express.static("app"));
 app.use("/upload", require("./app/routes/upload"));
 app.use(express.static("app"));
 
+app.use("/orders", require("./app/routes/orders"));
+app.use(express.static("app"));
+
+app.use("/products", require("./app/routes/productos"));
+app.use(express.static("app"));
+
 app.use("/cuentas", require("./app/routes/cuentas"));
 app.use(express.static("app"));
 
 let io = new Server(server, {
   cors: {
-    origin: "http://front.toyoxpress.com",
+    origin: "http://localhost:3000",
     methods: ["GET", "POST", "UPDATE"],
   },
 });
