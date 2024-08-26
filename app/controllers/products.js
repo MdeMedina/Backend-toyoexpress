@@ -4,6 +4,7 @@ const WooCommerceRestApi = require("@woocommerce/woocommerce-rest-api").default;
 const { SQSClient, SendMessageCommand } = require("@aws-sdk/client-sqs");
 // import WooCommerceRestApi from "@woocommerce/woocommerce-rest-api"; // Supports ESM
 
+
 const WooCommerce = new WooCommerceRestApi({
   url: 'https://pruebas.toyoxpress.com/',
   consumerKey: 'ck_252527c6a32ea50bbd68947d7f315eab83475a70',
@@ -12,7 +13,10 @@ const WooCommerce = new WooCommerceRestApi({
   queryStringAuth: true // Force Basic Authentication as query string true and using under HTTPS
 })
 
-const client = new SQSClient({ region: "us-east-1" }); 
+const client = new SQSClient({ region: "us-east-2",   credentials: {
+    accessKeyId: process.env.AWS_ACCESS_KEY_ID,
+    secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY,
+  }}); 
 
 
 
@@ -48,7 +52,7 @@ const makeProducts = async (req, res) => {
     })
     const skus = body.map(producto => producto.Código);
 
- await Productos.deleteMany({}, function (err) {
+ Producto.deleteMany({}, function (err) {
     if (err) {
       console.log(err);
     } else {
@@ -57,12 +61,12 @@ const makeProducts = async (req, res) => {
       );
     }
   });
-  await Productos.insertMany(body);
+ Producto.insertMany(body);
 
   for (sku in skus) {
     const params = {
       QueueUrl: "https://sqs.us-east-2.amazonaws.com/872515257475/Toyoxpress",
-      MessageBody: {sku: sku},
+      MessageBody: sku,
 };
     const command = new SendMessageCommand(params);
 try {
@@ -75,7 +79,7 @@ try {
 
   
     } catch (error) {
-    console.error(error.response.data)
+    console.error(error)
     throw error;
   }
 
@@ -95,7 +99,7 @@ if (body.exits) {
     console.log(response.data);
   })
   .catch((error) => {
-    console.log(error.response.data);
+    console.log(error);
   });
 }
 } catch (error) {
