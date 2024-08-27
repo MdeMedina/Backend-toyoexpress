@@ -32,6 +32,7 @@ function chunkArray(array, size) {
 const makeProducts = async (req, res) => {
   try {
     const {body} = req
+    console.log(body)
     let arrayBueno = body.map(producto => {
       return {  
         name: producto["Nombre Corto"],
@@ -61,22 +62,26 @@ const makeProducts = async (req, res) => {
       );
     }
   });
- Producto.insertMany(body);
+ Producto.insertMany(arrayBueno);
 
-  for (sku in skus) {
-    const params = {
-      QueueUrl: "https://sqs.us-east-2.amazonaws.com/872515257475/Toyoxpress",
-      MessageBody: sku,
-};
-    const command = new SendMessageCommand(params);
-try {
+for (const sku of skus) {
+  console.log("sku: ", sku);
+  const params = {
+    QueueUrl: "https://sqs.us-east-2.amazonaws.com/872515257475/Toyoxpress",
+    MessageBody: sku,
+  };
+  const command = new SendMessageCommand(params);
+  console.log("Command: ", command);
+  try {
     const data = await client.send(command);
-   console.log("Mensaje enviado con éxito:", data);
-} catch (error) {
-  console.error("Error al enviar el mensaje:", error);
-}
+    console.log("Mensaje enviado con éxito:", data);
+  } catch (error) {
+    console.error("Error al enviar el mensaje:", error);
   }
+}
 
+
+    res.status(200).send({ message: "Excel Actualizado con éxito!" });
   
     } catch (error) {
     console.error(error)
@@ -87,6 +92,7 @@ try {
 
 const assingProducts = async (req, res) => {
 try {
+  console.log(req)
 const {body} = req
 const producto = Producto.findOne({sku: body.sku})
 if (body.exits) {
