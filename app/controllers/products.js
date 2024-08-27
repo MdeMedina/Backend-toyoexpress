@@ -93,7 +93,7 @@ for (const sku of skus) {
 const assingProducts = async (req, res) => {
 try {
 const {body} = req
-const producto = Producto.findOne({sku: body.sku})
+const producto = await Producto.findOne({sku: body.sku})
 console.log(producto)
 if (body.exits) {
   WooCommerce.put(`products?sku=${body.sku}`, producto).then((response) => {
