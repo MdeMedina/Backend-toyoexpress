@@ -97,7 +97,7 @@ const producto = await Producto.findOne({sku: body.sku})
 if (body.exits) {
  // Actualización del producto en WooCommerce
   const response = await WooCommerce.put(`products?sku=${body.sku}`, producto);
-  console.log(response);
+  console.log("Respuesta PUT", response);
 
   // Parámetros para eliminar el mensaje en SQS
   const deleteParams = {
@@ -114,7 +114,7 @@ if (body.exits) {
 } else {
   // Creación del producto en WooCommerce
   const response = await WooCommerce.post("products", producto);
-  console.log(response);
+  console.log("Respuesta POST", response);
 
   // Parámetros para eliminar el mensaje en SQS
   const deleteParams = {
