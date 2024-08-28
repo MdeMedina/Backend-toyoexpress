@@ -95,33 +95,40 @@ try {
 const {body} = req
 const producto = await Producto.findOne({sku: body.sku})
 if (body.exits) {
- WooCommerce.put(`products?sku=${body.sku}`, producto).then(async (response) => {
+ // Actualización del producto en WooCommerce
+  const response = await WooCommerce.put(`products?sku=${body.sku}`, producto);
   console.log(response);
-              const deleteParams = {
-            QueueUrl: 'https://sqs.us-east-2.amazonaws.com/872515257475/Toyoxpress',
-            ReceiptHandle: body.receiptHandle
-          };
 
-          // Comando para eliminar el mensaje
-          const deleteCommand = new DeleteMessageCommand(deleteParams);
-          await sqsClient.send(deleteCommand);
-  })
+  // Parámetros para eliminar el mensaje en SQS
+  const deleteParams = {
+    QueueUrl: 'https://sqs.us-east-2.amazonaws.com/872515257475/Toyoxpress',
+    ReceiptHandle: body.receiptHandle
+  };
+
+  // Comando para eliminar el mensaje
+  const deleteCommand = new DeleteMessageCommand(deleteParams);
+  
+  // Envío del comando para eliminar el mensaje en SQS
+  await sqsClient.send(deleteCommand);
+  console.log("Mensaje eliminado de SQS");
 } else {
-WooCommerce.post("products", producto)
-  .then(async (response) => {
-    console.log(response)
-              const deleteParams = {
-            QueueUrl: 'https://sqs.us-east-2.amazonaws.com/872515257475/Toyoxpress',
-            ReceiptHandle: body.receiptHandle
-          };
+  // Creación del producto en WooCommerce
+  const response = await WooCommerce.post("products", producto);
+  console.log(response);
 
-          // Comando para eliminar el mensaje
-          const deleteCommand = new DeleteMessageCommand(deleteParams);
-          await sqsClient.send(deleteCommand);
-  })
-  .catch((error) => {
-    console.log(error);
-  });
+  // Parámetros para eliminar el mensaje en SQS
+  const deleteParams = {
+    QueueUrl: 'https://sqs.us-east-2.amazonaws.com/872515257475/Toyoxpress',
+    ReceiptHandle: body.receiptHandle
+  };
+
+  // Comando para eliminar el mensaje
+  const deleteCommand = new DeleteMessageCommand(deleteParams);
+  
+  // Envío del comando para eliminar el mensaje en SQS
+  await sqsClient.send(deleteCommand);
+  console.log("Mensaje eliminado de SQS");
+
 }
 res.status(200).send({ message: "Datos Actualizados con exito!" });
 } catch (error) {
