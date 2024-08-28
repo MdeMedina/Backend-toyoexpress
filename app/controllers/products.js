@@ -95,7 +95,7 @@ try {
 const {body} = req
 const producto = await Producto.findOne({sku: body.sku})
 if (body.exits) {
-  let response = WooCommerce.put(`products?sku=${body.sku}`, producto).then(async (response) => {
+  let response = await WooCommerce.put(`products?sku=${body.sku}`, producto).then(async (response) => {
               const deleteParams = {
             QueueUrl: 'https://sqs.us-east-2.amazonaws.com/872515257475/Toyoxpress',
             ReceiptHandle: body.receiptHandle
@@ -107,7 +107,7 @@ if (body.exits) {
   })
   console.log("Respuesta PUT:", response)
 } else {
-  let response = WooCommerce.post("products", producto)
+  let response = await WooCommerce.post("products", producto)
   .then(async (response) => {
               const deleteParams = {
             QueueUrl: 'https://sqs.us-east-2.amazonaws.com/872515257475/Toyoxpress',
