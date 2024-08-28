@@ -1,7 +1,7 @@
 const { Producto } = require("../models/product");
 
 const WooCommerceRestApi = require("@woocommerce/woocommerce-rest-api").default;
-const { SQSClient, SendMessageCommand } = require("@aws-sdk/client-sqs");
+const { SQSClient, SendMessageCommand, DeleteMessageCommand } = require("@aws-sdk/client-sqs");
 // import WooCommerceRestApi from "@woocommerce/woocommerce-rest-api"; // Supports ESM
 
 
@@ -95,9 +95,9 @@ try {
 const {body} = req
 const producto = await Producto.findOne({sku: body.sku})
 console.log("Producto", producto)
-if (body.exits) {
+if (body.exists) {
  // Actualización del producto en WooCommerce
-  const response = await WooCommerce.put(`products?sku=${body.sku}`, producto);
+  const response = await WooCommerce.put(`products/${body.id}`, producto);
   console.log("Respuesta PUT", response);
 
   // Parámetros para eliminar el mensaje en SQS
@@ -107,11 +107,11 @@ if (body.exits) {
   };
 
   // Comando para eliminar el mensaje
-  const deleteCommand = new DeleteMessageCommand(deleteParams);
-  
-  // Envío del comando para eliminar el mensaje en SQS
-  await sqsClient.send(deleteCommand);
-  console.log("Mensaje eliminado de SQS");
+    const deleteCommand = new DeleteMessageCommand(deleteParams);
+    
+    // Envío del comando para eliminar el mensaje en SQS
+    await sqsClient.send(deleteCommand);
+    console.log("Mensaje eliminado de SQS");
 } else {
   // Creación del producto en WooCommerce
   const response = await WooCommerce.post("products", producto);
