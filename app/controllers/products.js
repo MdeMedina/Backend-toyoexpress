@@ -134,7 +134,7 @@ if (body.exists) {
 res.status(200).send({ message: "Datos Actualizados con exito!" });
 } catch (error) {
 console.log(error)
-console.log("prueba: ", body)
+console.log("prueba: ", req.body)
 }
 }
 
