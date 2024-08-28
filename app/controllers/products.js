@@ -41,6 +41,7 @@ const makeProducts = async (req, res) => {
         regular_price: producto["Precio Mayor"],
         sale_price: producto["Precio Oferta"],
         manage_stock: true,
+        status: "pending",
         stock_quantity: producto["Existencia Actual"],
         attributes: [{
           id: 1,
