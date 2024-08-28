@@ -93,23 +93,43 @@ for (const sku of skus) {
 const assingProducts = async (req, res) => {
 try {
 const {body} = req
-const producto = await Producto.findOne({sku: body.sku})
-console.log(producto)
+const producto = await Producto.find({})
+console.log("Producto:", producto)
 if (body.exits) {
-  WooCommerce.put(`products?sku=${body.sku}`, producto).then((response) => {
+  WooCommerce.put(`products?sku=${body.sku}`, producto).then(async (response) => {
     console.log(response.data)
+              const deleteParams = {
+            QueueUrl: 'https://sqs.us-east-2.amazonaws.com/872515257475/Toyoxpress',
+            ReceiptHandle: body.receiptHandle
+          };
+
+          // Comando para eliminar el mensaje
+          const deleteCommand = new DeleteMessageCommand(deleteParams);
+          await sqsClient.send(deleteCommand);
   })
 } else {
-  console.log(producto)
   WooCommerce.post("products", producto)
-  .then((response) => {
+  .then(async (response) => {
     console.log(response.data);
+              const deleteParams = {
+            QueueUrl: 'https://sqs.us-east-2.amazonaws.com/872515257475/Toyoxpress',
+            ReceiptHandle: body.receiptHandle
+          };
+
+          // Comando para eliminar el mensaje
+          const deleteCommand = new DeleteMessageCommand(deleteParams);
+          await sqsClient.send(deleteCommand);
   })
   .catch((error) => {
     console.log(error);
   });
 }
 res.status(200).send({ message: "Datos Actualizados con exito!" });
+
+        if (response.data === 'OK') {
+          // Parámetros para eliminar el mensaje de la cola SQS
+
+        }
 } catch (error) {
 console.log(error)
 }
