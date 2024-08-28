@@ -38,7 +38,7 @@ const makeProducts = async (req, res) => {
         name: producto["Nombre Corto"],
         sku: producto.Código,
         price: producto["Precio Mayor"],
-        regular_price: producto["Precio Minimo"],
+        regular_price: producto["Precio Mayor"],
         sale_price: producto["Precio Oferta"],
         manage_stock: true,
         stock_quantity: producto["Existencia Actual"],
@@ -105,7 +105,7 @@ if (body.exits) {
           const deleteCommand = new DeleteMessageCommand(deleteParams);
           await sqsClient.send(deleteCommand);
   })
-  console.log("Respuesta PUT:", response)
+  console.log("Respuesta PUT:", response.data)
 } else {
   let response = await WooCommerce.post("products", producto)
   .then(async (response) => {
@@ -121,7 +121,7 @@ if (body.exits) {
   .catch((error) => {
     console.log(error);
   });
-  console.log("Respuesta POST:", response)
+  console.log("Respuesta POST:", response.data)
 }
 res.status(200).send({ message: "Datos Actualizados con exito!" });
 } catch (error) {
