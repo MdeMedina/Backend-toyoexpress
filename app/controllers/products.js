@@ -110,7 +110,7 @@ if (body.exists) {
     const deleteCommand = new DeleteMessageCommand(deleteParams);
     
     // Envío del comando para eliminar el mensaje en SQS
-    await sqsClient.send(deleteCommand);
+    await client.send(deleteCommand);
     console.log("Mensaje eliminado de SQS");
 } else {
   // Creación del producto en WooCommerce
@@ -127,7 +127,7 @@ if (body.exists) {
   const deleteCommand = new DeleteMessageCommand(deleteParams);
   
   // Envío del comando para eliminar el mensaje en SQS
-  await sqsClient.send(deleteCommand);
+  await client.send(deleteCommand);
   console.log("Mensaje eliminado de SQS");
 
 }
