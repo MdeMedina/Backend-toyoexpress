@@ -125,11 +125,6 @@ if (body.exits) {
   });
 }
 res.status(200).send({ message: "Datos Actualizados con exito!" });
-
-        if (response.data === 'OK') {
-          // Parámetros para eliminar el mensaje de la cola SQS
-
-        }
 } catch (error) {
 console.log(error)
 }
