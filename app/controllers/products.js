@@ -94,10 +94,8 @@ const assingProducts = async (req, res) => {
 try {
 const {body} = req
 const producto = await Producto.findOne({sku: body.sku})
-console.log("Producto:", producto)
 if (body.exits) {
   let response = WooCommerce.put(`products?sku=${body.sku}`, producto).then(async (response) => {
-    console.log(response.data)
               const deleteParams = {
             QueueUrl: 'https://sqs.us-east-2.amazonaws.com/872515257475/Toyoxpress',
             ReceiptHandle: body.receiptHandle
@@ -111,7 +109,6 @@ if (body.exits) {
 } else {
   let response = WooCommerce.post("products", producto)
   .then(async (response) => {
-    console.log(response.data);
               const deleteParams = {
             QueueUrl: 'https://sqs.us-east-2.amazonaws.com/872515257475/Toyoxpress',
             ReceiptHandle: body.receiptHandle
