@@ -16,6 +16,10 @@ const Producto = mongoose.model("Producto", {
     variation: Boolean,
     options: [String]
   }],
+    meta_data: [
+  { id: Number, key: String, value: String },
+  { id: Number, key: String, value: String },
+  ],
 });
 
 module.exports = { Producto };

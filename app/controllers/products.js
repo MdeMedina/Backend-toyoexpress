@@ -50,7 +50,14 @@ const makeProducts = async (req, res) => {
           visible: true,
           variation: false,
           options: [producto.Marca]
-  }]}
+  }],
+  meta_data: [{ key: 'cliente 2 price', value: producto.precio2 },
+      {
+    key: 'festiUserRolePrices',
+    value: `{"cliente2":"${producto.precio2}","salePrice":{"cliente2":""},"schedule":{"cliente2":{"date_from":"","date_to":""}}}`
+  }
+  ],
+}
     })
     const skus = body.map(producto => producto.Código);
 
