@@ -134,6 +134,8 @@ if (body.exists) {
 res.status(200).send({ message: "Datos Actualizados con exito!" });
 } catch (error) {
 console.log(error)
+console.log("prueba: ", process.env.AWS_ACCESS_KEY_ID)
+console.log("prueba: ", process.env.AWS_SECRET_ACCESS_KEY)
 }
 }
 
