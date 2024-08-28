@@ -94,6 +94,7 @@ const assingProducts = async (req, res) => {
 try {
 const {body} = req
 const producto = await Producto.findOne({sku: body.sku})
+console.log("Producto", producto)
 if (body.exits) {
  // Actualización del producto en WooCommerce
   const response = await WooCommerce.put(`products?sku=${body.sku}`, producto);
