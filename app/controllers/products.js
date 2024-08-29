@@ -146,7 +146,6 @@ sendToClients({ message: `Producto ${body.sku} asignado/actualizado con éxito.`
 res.status(200).send({ message: "Datos Actualizados con exito!" });
 } catch (error) {
 console.log(error)
-console.log("prueba: ", req.body)
 }
 }
 

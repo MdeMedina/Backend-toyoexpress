@@ -16,6 +16,7 @@ const addClient = (res) => {
 
 // Función para enviar un mensaje a todos los clientes
 const sendToClients = (message) => {
+  console.log("Entre en sendClients y este es mi message", message)
   clients.forEach(client => client.write(`data: ${JSON.stringify(message)}\n\n`));
 };
 
