@@ -10,5 +10,12 @@
         "src": "/(.*)",
         "dest": "/"
     }
-    ]
+    ],
+    "headers": [
+        {
+          "for": "/events",  
+          "key": "Access-Control-Allow-Origin",
+          "value": "http://localhost:3000" 
+        }
+      ]
 }
