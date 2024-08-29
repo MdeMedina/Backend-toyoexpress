@@ -5,37 +5,25 @@ const http = require("http");
 const mongoose = require("mongoose");
 const { dbConnect } = require("./config/mongo");
 const { bodyParser } = require("body-parser");
+const { addClient, sendToClients } = require('./sseManager');
 const cors = require("cors");
 const PORT = process.env.PORT;
 dbConnect();
-
-let clients = [];
 
 const app = express();
 let server = http.createServer(app);
 
 app.use(express.json({ limit: "10mb" }));
-app.use(cors({
-  origin: "http://localhost:3000"
-}));
-
-app.get('/events', (req, res) => {
-  res.setHeader('Content-Type', 'text/event-stream');
-  res.setHeader('Cache-Control', 'no-cache');
-  res.setHeader('Connection', 'keep-alive');
-  res.flushHeaders();
-
-  clients.push(res);
-
-  req.on('close', () => {
-    clients = clients.filter(client => client !== res);
-  });
-});
+app.use(cors());
 
 app.use("/users", require("./app/routes/users"));
 app.use(express.static("app"));
 app.use("/pdf", require("./app/routes/dataPDF"));
 app.use(express.static("app"));
+
+app.get('/events', (req, res) => {
+  addClient(res);
+});
 
 app.use("/excel", require("./app/routes/excel"));
 app.use(express.static("app"));
@@ -83,5 +71,3 @@ io.on("connection", (socket) => {
 server.listen(PORT, () => {
   console.log("listening in port " + PORT);
 });
-
-module.exports = { clients };

@@ -1,5 +1,5 @@
 const { Producto } = require("../models/product");
-const { clients } = require('../../index')
+const { sendToClients } = require('../../sseManager')
 const WooCommerceRestApi = require("@woocommerce/woocommerce-rest-api").default;
 const { SQSClient, SendMessageCommand, DeleteMessageCommand } = require("@aws-sdk/client-sqs");
 // import WooCommerceRestApi from "@woocommerce/woocommerce-rest-api"; // Supports ESM
@@ -19,9 +19,6 @@ const client = new SQSClient({ region: "us-east-2",   credentials: {
   }}); 
 
 
-  function sendSSEToClients(message) {
-  clients.forEach(client => client.write(`data: ${JSON.stringify(message)}\n\n`));
-}
 
 
 
@@ -145,7 +142,7 @@ if (body.exists) {
 
 }
 
-sendSSEToClients({ message: `Producto ${body.sku} asignado/actualizado con éxito.`, index: body.index, longitud: body.longitud});
+sendToClients({ message: `Producto ${body.sku} asignado/actualizado con éxito.`, index: body.index, longitud: body.longitud});
 res.status(200).send({ message: "Datos Actualizados con exito!" });
 } catch (error) {
 console.log(error)
