@@ -2,11 +2,12 @@ let clients = [];
 
 // Función para añadir un cliente SSE
 const addClient = (res) => {
-  res.setHeader('Content-Type', 'text/event-stream');
-  res.setHeader('Cache-Control', 'no-cache');
-  res.setHeader('Connection', 'keep-alive');
-  res.flushHeaders();
+ res.writeHead(200, {
+    'Content-Type': 'text/event-stream',   
 
+    'Connection': 'keep-alive',
+    'Cache-Control': 'no-cache'
+  });
   clients.push(res);
   console.log("Entre al manage")
 
