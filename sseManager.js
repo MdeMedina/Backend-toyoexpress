@@ -1,28 +1,41 @@
-let clients = [];
+let clients = new Map(); // Utilizando un Map para almacenar clientes con ID
 
-// Función para añadir un cliente SSE
-const addClient = async (res) => {
- await res.writeHead(200, {
-    'Content-Type': 'text/event-stream',   
-
-    'Connection': 'keep-alive',
-    'Cache-Control': 'no-cache'
-  });
-  clients.push(res);
-  console.log("Entre al manage")
-
-  res.on('close', () => {
-    clients = clients.filter(client => client !== res);
-  });
+const generateUniqueId = () => {
+    return Date.now().toString(36) + Math.random().toString(36).substring(2, 9);
 };
 
-// Función para enviar un mensaje a todos los clientes
+const addClient = async (res) => {
+  try {
+    const clientId = generateUniqueId(); // Genera un ID único para el cliente
+    clients.set(clientId, res);
+
+    await res.writeHead(200, {
+      'Content-Type': 'text/event-stream',
+      'Connection': 'keep-alive',
+      'Cache-Control': 'no-cache'
+    });
+
+    res.write(`data: Welcome! Your client ID is: ${clientId}\n\n`);
+
+    res.on('close', () => {
+      clients.delete(clientId);
+    });
+  } catch (error) {
+    console.error('Error adding client:', error);
+  }
+};
+
 const sendToClients = (message) => {
-  console.log("Entre en sendClients y este es mi message", message)
-  clients.forEach(client => client.write(`data: ${JSON.stringify(message)}\n\n`));
+  clients.forEach(client => {
+    try {
+      client.write(`data: ${JSON.stringify(message)}\n\n`);
+    } catch (error) {
+      console.error('Error sending message to client:', error);
+    }
+  });
 };
 
 module.exports = {
   addClient,
-  sendToClients,
-};
+  sendToClients
+}
