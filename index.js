@@ -15,7 +15,9 @@ const app = express();
 let server = http.createServer(app);
 
 app.use(express.json({ limit: "10mb" }));
-app.use(cors());
+app.use(cors({
+  origin: "http://localhost:3000"
+}));
 
 app.get('/events', (req, res) => {
   res.setHeader('Content-Type', 'text/event-stream');
