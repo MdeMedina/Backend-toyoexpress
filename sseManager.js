@@ -8,6 +8,7 @@ const addClient = (res) => {
   res.flushHeaders();
 
   clients.push(res);
+  console.log("Entre al manage")
 
   res.on('close', () => {
     clients = clients.filter(client => client !== res);
