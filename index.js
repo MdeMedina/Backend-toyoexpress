@@ -9,11 +9,26 @@ const cors = require("cors");
 const PORT = process.env.PORT;
 dbConnect();
 
+let clients = [];
+
 const app = express();
 let server = http.createServer(app);
 
 app.use(express.json({ limit: "10mb" }));
 app.use(cors());
+
+app.get('/events', (req, res) => {
+  res.setHeader('Content-Type', 'text/event-stream');
+  res.setHeader('Cache-Control', 'no-cache');
+  res.setHeader('Connection', 'keep-alive');
+  res.flushHeaders();
+
+  clients.push(res);
+
+  req.on('close', () => {
+    clients = clients.filter(client => client !== res);
+  });
+});
 
 app.use("/users", require("./app/routes/users"));
 app.use(express.static("app"));
@@ -66,3 +81,5 @@ io.on("connection", (socket) => {
 server.listen(PORT, () => {
   console.log("listening in port " + PORT);
 });
+
+module.exports = { clients };

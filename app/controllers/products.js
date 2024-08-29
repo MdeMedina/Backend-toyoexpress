@@ -1,5 +1,5 @@
 const { Producto } = require("../models/product");
-
+const { clients } = require('../../index')
 const WooCommerceRestApi = require("@woocommerce/woocommerce-rest-api").default;
 const { SQSClient, SendMessageCommand, DeleteMessageCommand } = require("@aws-sdk/client-sqs");
 // import WooCommerceRestApi from "@woocommerce/woocommerce-rest-api"; // Supports ESM
@@ -17,6 +17,11 @@ const client = new SQSClient({ region: "us-east-2",   credentials: {
     accessKeyId: process.env.AWS_ACCESS_KEY_ID,
     secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY,
   }}); 
+
+
+  function sendSSEToClients(message) {
+  clients.forEach(client => client.write(`data: ${JSON.stringify(message)}\n\n`));
+}
 
 
 
@@ -72,11 +77,11 @@ const makeProducts = async (req, res) => {
   });
  Producto.insertMany(arrayBueno);
 
-for (const sku of skus) {
-  console.log("sku: ", sku);
+skus.forEach(async (sku, index) => {
+  console.log("sku: ", sku, " - Index: ", index);
   const params = {
     QueueUrl: "https://sqs.us-east-2.amazonaws.com/872515257475/Toyoxpress",
-    MessageBody: sku,
+    MessageBody: JSON.stringify({sku, index, longitud: skus.length}),
   };
   const command = new SendMessageCommand(params);
   console.log("Command: ", command);
@@ -86,7 +91,7 @@ for (const sku of skus) {
   } catch (error) {
     console.error("Error al enviar el mensaje:", error);
   }
-}
+});
 
 
     res.status(200).send({ message: "Excel Actualizado con éxito!" });
@@ -139,6 +144,8 @@ if (body.exists) {
   console.log("Mensaje eliminado de SQS");
 
 }
+
+sendSSEToClients({ message: `Producto ${body.sku} asignado/actualizado con éxito.`, index: body.index, longitud: body.longitud});
 res.status(200).send({ message: "Datos Actualizados con exito!" });
 } catch (error) {
 console.log(error)

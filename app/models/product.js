@@ -6,6 +6,7 @@ const Producto = mongoose.model("Producto", {
   price: String,
   regular_price: String,
   sale_price: String,
+  status: String,
   manage_stock: Boolean,
   stock_quantity: Number,
   attributes: [{
