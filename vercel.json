@@ -10,12 +10,9 @@
       {
         "src": "/(.*)",
         "dest": "/",
-        "headers": [
-          {
-            "key": "Access-Control-Allow-Origin",
-            "value": "http://localhost:3000"
-          }
-        ]
+        "headers": {
+          "Access-Control-Allow-Origin": "http://localhost:3000"
+        }
       }
     ]
   }
