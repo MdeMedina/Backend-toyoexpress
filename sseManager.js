@@ -1,8 +1,8 @@
 let clients = [];
 
 // Función para añadir un cliente SSE
-const addClient = (res) => {
- res.writeHead(200, {
+const addClient = async (res) => {
+ await res.writeHead(200, {
     'Content-Type': 'text/event-stream',   
 
     'Connection': 'keep-alive',
