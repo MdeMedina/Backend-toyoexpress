@@ -10,10 +10,10 @@ const WooCommerce = new WooCommerceRestApi({
 })
 const getWoo = async () => {
   try {
-    const response = await WooCommerce.get("products");
+    const response = await WooCommerce.get(`products?sku=G90919-02259-J`);
     const prueba = []
     const totalProducts = response.headers['x-wp-total'];
-    console.log(response.data[0].attributes);
+
     return totalProducts;
   } catch (error) {
     console.error(error.response.data)
