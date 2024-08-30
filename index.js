@@ -15,7 +15,9 @@ let server = http.createServer(app);
 
 app.use(express.json({ limit: "10mb" }));
 app.use(cors({
-  origin: '*',
+  origin: 'http://localhost:3000', // Reemplaza con el origen de tu frontend
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization']
 }));
 
 app.use("/users", require("./app/routes/users"));
