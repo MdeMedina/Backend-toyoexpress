@@ -44,6 +44,7 @@ const makeProducts = async (req, res) => {
         sale_price: producto["Precio Oferta"],
         manage_stock: true,
         status: "pending",
+        catalog_visibility: "hidden",
         stock_quantity: producto["Existencia Actual"],
         attributes: [{
           id: 1,
@@ -142,7 +143,7 @@ if (body.exists) {
 
 }
 
-sendToClients({ message: `Producto ${body.sku} asignado/actualizado con éxito.`, index: body.index, longitud: body.longitud});
+sendToClients({ index: body.index, longitud: body.longitud});
 res.status(200).send({ message: "Datos Actualizados con exito!" });
 } catch (error) {
 console.log(error)

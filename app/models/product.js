@@ -9,6 +9,7 @@ const Producto = mongoose.model("Producto", {
   status: String,
   manage_stock: Boolean,
   stock_quantity: Number,
+  catalog_visibility: String,
   attributes: [{
     id: Number,
     name: String,
