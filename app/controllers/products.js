@@ -78,8 +78,10 @@ const makeProducts = async (req, res) => {
 skus.forEach(async (sku, index) => {
   console.log("sku: ", sku, " - Index: ", index);
   const params = {
-    QueueUrl: "https://sqs.us-east-2.amazonaws.com/872515257475/Toyoxpress",
+    QueueUrl: "https://sqs.us-east-2.amazonaws.com/872515257475/Toyoxpress.fifo",
     MessageBody: JSON.stringify({sku, index, longitud: skus.length}),
+    MessageGroupId: "grupo-1",
+    MessageDeduplicationId: `${Date.now()}`, 
   };
   const command = new SendMessageCommand(params);
   console.log("Command: ", command);
