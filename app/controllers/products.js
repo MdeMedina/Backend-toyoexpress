@@ -113,7 +113,7 @@ if (body.exists) {
 
   // Parámetros para eliminar el mensaje en SQS
   const deleteParams = {
-    QueueUrl: 'https://sqs.us-east-2.amazonaws.com/872515257475/Toyoxpress',
+    QueueUrl: 'https://sqs.us-east-2.amazonaws.com/872515257475/Toyoxpress.fifo',
     ReceiptHandle: body.receiptHandle
   };
 
@@ -130,7 +130,7 @@ if (body.exists) {
 
   // Parámetros para eliminar el mensaje en SQS
   const deleteParams = {
-    QueueUrl: 'https://sqs.us-east-2.amazonaws.com/872515257475/Toyoxpress',
+    QueueUrl: 'https://sqs.us-east-2.amazonaws.com/872515257475/Toyoxpress.fifo',
     ReceiptHandle: body.receiptHandle
   };
 
