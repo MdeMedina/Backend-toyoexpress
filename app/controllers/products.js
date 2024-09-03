@@ -105,11 +105,9 @@ const assingProducts = async (req, res) => {
 try {
 const {body} = req
 const producto = await Producto.findOne({sku: body.sku})
-console.log("Producto", producto)
 if (body.exists) {
  // Actualización del producto en WooCommerce
   const response = await WooCommerce.put(`products/${body.id}`, producto);
-  console.log("Respuesta PUT", response);
 
   // Parámetros para eliminar el mensaje en SQS
   const deleteParams = {
@@ -143,7 +141,8 @@ if (body.exists) {
 
 }
 
-console.log(body.index+1 % 20)
+console.log("Pruebas: ", body.index+1)
+console.log("Pruebas de modulo: ", body.index+1 % 20)
 if (body.index+1 % 20 == 0) {
   console.log("He ingresado en el multiplo de: 20")
   sendToClients({ index: body.index+1, longitud: body.longitud});
