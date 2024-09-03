@@ -143,7 +143,7 @@ if (body.exists) {
 
 console.log("Pruebas: ", body.index+1)
 console.log("Pruebas de modulo: ", (body.index+1) % 20)
-if ((body.index+1) % 20 == 0) {
+if ((body.index+1) % 20 == 0 || body.index+1 == body.longitud) {
   console.log("He ingresado en el multiplo de: 20")
   sendToClients({ index: body.index+1, longitud: body.longitud});
 }
