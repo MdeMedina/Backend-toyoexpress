@@ -17,8 +17,6 @@ const addClient = async (res) => {
 
 console.log("Salimos del pending")
 
-    res.write(`data: Welcome! Your client ID is: ${clientId}\n\n`);
-
 
     res.on('close', () => {
       clients.delete(clientId);
