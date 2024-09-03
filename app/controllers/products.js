@@ -142,8 +142,10 @@ if (body.exists) {
   console.log("Mensaje eliminado de SQS");
 
 }
+if (body.index+1 % 20 == 0) {
+  sendToClients({ index: body.index+1, longitud: body.longitud});
+}
 
-sendToClients({ index: body.index+1, longitud: body.longitud});
 res.status(200).send({ message: "Datos Actualizados con exito!" });
 } catch (error) {
 console.log(error)
