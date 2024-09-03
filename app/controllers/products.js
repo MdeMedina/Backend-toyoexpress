@@ -126,7 +126,7 @@ if (body.exists) {
 } else {
   // Creación del producto en WooCommerce
   const response = await WooCommerce.post("products", producto);
-  console.log("Respuesta POST", response);
+
 
   // Parámetros para eliminar el mensaje en SQS
   const deleteParams = {
