@@ -143,7 +143,7 @@ if (body.exists) {
 
 }
 
-sendToClients({ index: body.index, longitud: body.longitud});
+sendToClients({ index: body.index+1, longitud: body.longitud});
 res.status(200).send({ message: "Datos Actualizados con exito!" });
 } catch (error) {
 console.log(error)
