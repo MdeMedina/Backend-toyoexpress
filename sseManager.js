@@ -29,7 +29,7 @@ console.log("Salimos del pending")
 };
 
 const sendToClients = (message) => {
-  client = clients[0]
+  client = clients[clients.length-1]
     try {
       client.write(`data: ${JSON.stringify(message)}\n\n`);
     } catch (error) {
