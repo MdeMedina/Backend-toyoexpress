@@ -29,14 +29,13 @@ console.log("Salimos del pending")
 };
 
 const sendToClients = (message) => {
-  clients.forEach(client => {
+  client = clients[0]
     try {
       client.write(`data: ${JSON.stringify(message)}\n\n`);
     } catch (error) {
       console.error('Error sending message to client:', error);
     }
-  });
-};
+  }
 
 module.exports = {
   addClient,
