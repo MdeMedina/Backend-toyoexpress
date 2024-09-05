@@ -34,7 +34,7 @@ function chunkArray(array, size) {
 const makeProducts = async (req, res) => {
   try {
     const {body} = req
-    console.log(body)
+    if (body) {
     let arrayBueno = body.map(producto => {
       return {  
         name: producto["Nombre Corto"],
@@ -76,7 +76,6 @@ const makeProducts = async (req, res) => {
  Producto.insertMany(arrayBueno);
 
 skus.forEach(async (sku, index) => {
-  console.log("sku: ", sku, " - Index: ", index);
   const params = {
     QueueUrl: "https://sqs.us-east-2.amazonaws.com/872515257475/Toyoxpress.fifo",
     MessageBody: JSON.stringify({sku, index, longitud: skus.length}),
@@ -84,10 +83,8 @@ skus.forEach(async (sku, index) => {
     MessageDeduplicationId: `${Date.now()}`, 
   };
   const command = new SendMessageCommand(params);
-  console.log("Command: ", command);
   try {
     const data = await client.send(command);
-    console.log("Mensaje enviado con éxito:", data);
   } catch (error) {
     console.error("Error al enviar el mensaje:", error);
   }
@@ -95,7 +92,9 @@ skus.forEach(async (sku, index) => {
 
 
     res.status(200).send({ message: "Excel Actualizado con éxito!" });
-  
+} else {
+  res.status(400).send({ message: "Error al actualizar el Excel" });
+}
     } catch (error) {
     console.error(error)
     throw error;
