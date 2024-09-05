@@ -105,6 +105,7 @@ skus.forEach(async (sku, index) => {
 
 const assingProducts = async (req, res) => {
 try {
+console.log("Entre en assing products")
 const {body} = req
 const producto = await Producto.findOne({sku: body.sku})
 if (body.exists) {
@@ -144,7 +145,6 @@ if (body.exists) {
 }
 
 console.log("Pruebas: ", body.index+1)
-console.log("Pruebas de modulo: ", (body.index+1) % 20)
 if (body.index+1 == body.longitud) {
   console.log("He ingresado en el multiplo de: 50")
   sendToClients({ index: body.index+1, longitud: body.longitud});
