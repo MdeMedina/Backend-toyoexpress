@@ -15,7 +15,6 @@ const addClient = async (res) => {
       'Cache-Control': 'no-cache'
     });
 
-console.log("Salimos del pending")
 
     res.write(`data: Welcome! Your client ID is: ${clientId}\n\n`);
 
@@ -29,13 +28,19 @@ console.log("Salimos del pending")
 };
 
 const sendToClients = (message) => {
-  client = clients[clients.length-1]
-    try {
-      client.write(`data: ${JSON.stringify(message)}\n\n`);
-    } catch (error) {
-      console.error('Error sending message to client:', error);
+  try {
+    const lastClientId = Array.from(clients.keys()).pop(); // Obtener el ID del último cliente
+    const lastClient = clients.get(lastClientId); // Obtener el último cliente del Map
+
+    if (lastClient) {
+      lastClient.write(`data: ${JSON.stringify(message)}\n\n`);
+    } else {
+      console.error('No clients available to send the message.');
     }
+  } catch (error) {
+    console.error('Error sending message to the last client:', error);
   }
+};
 
 module.exports = {
   addClient,
