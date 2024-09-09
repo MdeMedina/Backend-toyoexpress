@@ -77,12 +77,11 @@ const makeProducts = async (req, res) => {
   });
  Producto.insertMany(arrayBueno);
 
-arrayChunked.forEach(async (arr, index) => {
   const params = {
     QueueUrl: "https://sqs.us-east-2.amazonaws.com/872515257475/Toyoxpress.fifo",
-    MessageBody: JSON.stringify({arr, index}),
+    MessageBody: JSON.stringify({arr: arrayChunked[0], index: 0}),
     MessageGroupId: "grupo-1",
-    MessageDeduplicationId: `${index}`, 
+    MessageDeduplicationId: `0`, 
   };
   const command = new SendMessageCommand(params);
   try {
@@ -91,7 +90,7 @@ arrayChunked.forEach(async (arr, index) => {
   } catch (error) {
     console.error("Error al enviar el mensaje:", error);
   }
-});
+
 
 
     res.status(200).send({ message: "Excel Actualizado con éxito!" });
@@ -108,23 +107,33 @@ arrayChunked.forEach(async (arr, index) => {
 const assingProducts = async (req, res) => {
 try {
 const {body} = req
-
+let actualizar = []
+let crear = []
 body.arr.forEach(async (product) => {
 const producto = await Producto.findOne({sku: product.sku})
-if (product.exists) {
- // Actualización del producto en WooCommerce
-  const response = await WooCommerce.put(`products/${producto.id}`, producto);
-
-  // Parámetros para eliminar el mensaje en SQS
+if (product.exists == true) {
+  actualizar.push(producto)
 } else {
-  // Creación del producto en WooCommerce
-  const response = await WooCommerce.post("products", producto);
-
-
-  // Parámetros para eliminar el mensaje en SQS
+  crear.push(producto)
 }
 
 })
+
+
+const data = {
+  create: crear,
+  update: actualizar,
+};
+
+WooCommerce.post("products/batch", data)
+  .then((response) => {
+    console.log(response.data);
+  })
+  .catch((error) => {
+    console.log(error.response.data);
+  });
+
+  // Parámetros para eliminar el mensaje en SQS
  const deleteParams = {
     QueueUrl: 'https://sqs.us-east-2.amazonaws.com/872515257475/Toyoxpress.fifo',
     ReceiptHandle: body.receiptHandle
@@ -137,9 +146,24 @@ if (product.exists) {
   await client.send(deleteCommand);
   console.log("Mensaje eliminado de SQS");
 
+sendToClients({ index: 1});
 
+if (arrayChunked.length > body.index + 1 ) {
+  const params = {
+    QueueUrl: "https://sqs.us-east-2.amazonaws.com/872515257475/Toyoxpress.fifo",
+    MessageBody: JSON.stringify({arr: arrayChunked[body.index+1], index: body.index+1}),
+    MessageGroupId: "grupo-1",
+    MessageDeduplicationId: `${body.index+1}`, 
+  };
+  const command = new SendMessageCommand(params);
+  try {
+    const data = await client.send(command);
+     console.log("Mensaje enviado: ", index)
+  } catch (error) {
+    console.error("Error al enviar el mensaje:", error);
+  }
+}
 
-  sendToClients({ index: 1});
 
 res.status(200).send({ message: "Datos Actualizados con exito!" });
 } catch (error) {
