@@ -19,22 +19,24 @@ const client = new SQSClient({ region: "us-east-2",   credentials: {
   }}); 
 
 
+let arrayChunked = []
+let arrayComprobatorio = []
 
 
 
-
-function chunkArray(array, size) {
-  const result = [];
-  for (let i = 0; i < array.length; i += size) {
-    result.push(array.slice(i, i + size));
-  }
-  return result;
-}
+const splitArrayIntoChunks = (array, chunkSize) => {
+      const result = [];
+      for (let i = 0; i < array.length; i += chunkSize) {
+        result.push(array.slice(i, i + chunkSize));
+      }
+      return result;
+    };
 
 const makeProducts = async (req, res) => {
   try {
     const {body} = req
     if (body) {
+
     let arrayBueno = body.map(producto => {
       return {  
         name: producto["Nombre Corto"],
@@ -63,7 +65,7 @@ const makeProducts = async (req, res) => {
 }
     })
     const skus = body.map(producto => producto.Código);
-
+    arrayChunked = splitArrayIntoChunks(skus, 50)
  Producto.deleteMany({}, function (err) {
     if (err) {
       console.log(err);
@@ -75,16 +77,17 @@ const makeProducts = async (req, res) => {
   });
  Producto.insertMany(arrayBueno);
 
-skus.forEach(async (sku, index) => {
+arrayChunked.forEach(async (arr, index) => {
   const params = {
     QueueUrl: "https://sqs.us-east-2.amazonaws.com/872515257475/Toyoxpress.fifo",
-    MessageBody: JSON.stringify({sku, index, longitud: skus.length}),
+    MessageBody: JSON.stringify({arr, index}),
     MessageGroupId: "grupo-1",
-    MessageDeduplicationId: `${Date.now()}`, 
+    MessageDeduplicationId: `${index}`, 
   };
   const command = new SendMessageCommand(params);
   try {
     const data = await client.send(command);
+     console.log("Mensaje enviado: ", index)
   } catch (error) {
     console.error("Error al enviar el mensaje:", error);
   }
@@ -104,32 +107,25 @@ skus.forEach(async (sku, index) => {
 
 const assingProducts = async (req, res) => {
 try {
-console.log("Entre en assing products")
 const {body} = req
-const producto = await Producto.findOne({sku: body.sku})
-if (body.exists) {
+
+body.arr.forEach(async (product) => {
+const producto = await Producto.findOne({sku: product.sku})
+if (product.exists) {
  // Actualización del producto en WooCommerce
-  const response = await WooCommerce.put(`products/${body.id}`, producto);
+  const response = await WooCommerce.put(`products/${producto.id}`, producto);
 
   // Parámetros para eliminar el mensaje en SQS
-  const deleteParams = {
-    QueueUrl: 'https://sqs.us-east-2.amazonaws.com/872515257475/Toyoxpress.fifo',
-    ReceiptHandle: body.receiptHandle
-  };
-
-  // Comando para eliminar el mensaje
-    const deleteCommand = new DeleteMessageCommand(deleteParams);
-    
-    // Envío del comando para eliminar el mensaje en SQS
-    await client.send(deleteCommand);
-    console.log("Mensaje eliminado de SQS");
 } else {
   // Creación del producto en WooCommerce
   const response = await WooCommerce.post("products", producto);
 
 
   // Parámetros para eliminar el mensaje en SQS
-  const deleteParams = {
+}
+
+})
+ const deleteParams = {
     QueueUrl: 'https://sqs.us-east-2.amazonaws.com/872515257475/Toyoxpress.fifo',
     ReceiptHandle: body.receiptHandle
   };
@@ -141,13 +137,9 @@ if (body.exists) {
   await client.send(deleteCommand);
   console.log("Mensaje eliminado de SQS");
 
-}
 
-console.log("Pruebas: ", body.index+1)
-if (body.index+1 == body.longitud) {
-  console.log("He ingresado en el multiplo de: 50")
-  sendToClients({ index: body.index+1, longitud: body.longitud});
-}
+
+  sendToClients({ index: 1});
 
 res.status(200).send({ message: "Datos Actualizados con exito!" });
 } catch (error) {
