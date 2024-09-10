@@ -107,6 +107,7 @@ const makeProducts = async (req, res) => {
 const assingProducts = async (req, res) => {
 try {
 const {body} = req
+console.log(body)
 let actualizar = []
 let crear = []
 body.arr.forEach(async (product) => {
