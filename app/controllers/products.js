@@ -147,7 +147,7 @@ WooCommerce.post("products/batch", data)
   await client.send(deleteCommand);
   console.log("Mensaje eliminado de SQS");
 
-sendToClients({ index: 1});
+sendToClients({ index: body.index+1});
 
 if (arrayChunked.length > body.index + 1 ) {
   const params = {
@@ -159,7 +159,7 @@ if (arrayChunked.length > body.index + 1 ) {
   const command = new SendMessageCommand(params);
   try {
     const data = await client.send(command);
-     console.log("Mensaje enviado: ", index)
+     console.log("Mensaje enviado: ", body.index+1)
   } catch (error) {
     console.error("Error al enviar el mensaje:", error);
   }
