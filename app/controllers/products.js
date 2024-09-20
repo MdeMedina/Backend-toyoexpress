@@ -1,5 +1,5 @@
 const { Producto } = require("../models/product");
-const { sendToClients } = require('../../sseManager')
+const { sendToClients, sendError } = require('../../sseManager')
 const WooCommerceRestApi = require("@woocommerce/woocommerce-rest-api").default;
 const { SQSClient, SendMessageCommand, DeleteMessageCommand } = require("@aws-sdk/client-sqs");
 // import WooCommerceRestApi from "@woocommerce/woocommerce-rest-api"; // Supports ESM
@@ -86,7 +86,7 @@ const makeProducts = async (req, res) => {
   const command = new SendMessageCommand(params);
   try {
     const data = await client.send(command);
-     console.log("Mensaje enviado: ", index)
+     console.log("Mensaje enviado: ", 0)
   } catch (error) {
     console.error("Error al enviar el mensaje:", error);
   }
@@ -99,6 +99,7 @@ const makeProducts = async (req, res) => {
 }
     } catch (error) {
     console.error(error)
+    sendError()
     throw error;
   }
 
@@ -126,13 +127,15 @@ const data = {
   update: actualizar,
 };
 
-WooCommerce.post("products/batch", data)
-  .then((response) => {
-    console.log(response.data);
-  })
-  .catch((error) => {
-    console.log(error.response.data);
-  });
+
+  WooCommerce.post("products/batch", data)
+    .then((response) => {
+      console.log(response.data);
+    })
+    .catch((error) => {
+      console.log(error.response.data);
+    });
+
 
   // Parámetros para eliminar el mensaje en SQS
  const deleteParams = {
@@ -168,7 +171,7 @@ if (arrayChunked.length > body.index + 1 ) {
 
 res.status(200).send({ message: "Datos Actualizados con exito!" });
 } catch (error) {
-console.log(error)
+sendError()
 }
 }
 
