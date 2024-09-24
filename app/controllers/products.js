@@ -35,9 +35,10 @@ const splitArrayIntoChunks = (array, chunkSize) => {
 const makeProducts = async (req, res) => {
   try {
     const {body} = req
-    if (body) {
+    const {data, length} = body
+    if (data) {
 
-    let arrayBueno = body.map(producto => {
+    let arrayBueno = data.map(producto => {
       return {  
         name: producto["Nombre Corto"],
         sku: producto.Código,
@@ -64,7 +65,7 @@ const makeProducts = async (req, res) => {
   ],
 }
     })
-    const skus = body.map(producto => producto.Código);
+    const skus = data.map(producto => producto.Código);
     arrayChunked = splitArrayIntoChunks(skus, 50)
  Producto.deleteMany({}, function (err) {
     if (err) {
@@ -79,7 +80,7 @@ const makeProducts = async (req, res) => {
 
   const params = {
     QueueUrl: "https://sqs.us-east-2.amazonaws.com/872515257475/Toyoxpress.fifo",
-    MessageBody: JSON.stringify({arr: arrayChunked[0], index: 0}),
+    MessageBody: JSON.stringify({arr: arrayChunked[0], index: 0, maximo: length}),
     MessageGroupId: "grupo-1",
     MessageDeduplicationId: `0`, 
   };
@@ -113,9 +114,12 @@ let actualizar = []
 let crear = []
 body.arr.forEach(async (product) => {
 const producto = await Producto.findOne({sku: product.sku})
+console.log(product.exists)
 if (product.exists == true) {
+  console.log(producto)
   actualizar.push(producto)
 } else {
+  console.log(producto)
   crear.push(producto)
 }
 
@@ -150,12 +154,12 @@ const data = {
   await client.send(deleteCommand);
   console.log("Mensaje eliminado de SQS");
 
-sendToClients({ index: body.index+1});
+sendToClients({ index: body.index+1, maximo: body.maximo});
 
 if (arrayChunked.length > body.index + 1 ) {
   const params = {
     QueueUrl: "https://sqs.us-east-2.amazonaws.com/872515257475/Toyoxpress.fifo",
-    MessageBody: JSON.stringify({arr: arrayChunked[body.index+1], index: body.index+1}),
+    MessageBody: JSON.stringify({arr: arrayChunked[body.index+1], index: body.index+1, maximo: body.maximo}),
     MessageGroupId: "grupo-1",
     MessageDeduplicationId: `${body.index+1}`, 
   };

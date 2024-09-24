@@ -42,7 +42,23 @@ const sendToClients = (message) => {
   }
 };
 
+const sendError = (message) => {
+  try {
+    const lastClientId = Array.from(clients.keys()).pop(); // Obtener el ID del último cliente
+    const lastClient = clients.get(lastClientId); // Obtener el último cliente del Map
+
+    if (lastClient) {
+    lastClient.write(`event: error\ndata: ${JSON.stringify({ message: 'Error sending message' })}\n\n`);
+    } else {
+      console.error('No clients available to send the message.');
+    }
+  } catch (error) {
+    console.error('Error sending message to the last client:', error);
+  }
+};
+
 module.exports = {
   addClient,
-  sendToClients
+  sendToClients,
+  sendError
 }
