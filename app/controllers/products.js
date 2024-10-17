@@ -116,10 +116,10 @@ body.arr.forEach(async (product) => {
 const producto = await Producto.findOne({sku: product.sku})
 console.log(product.exists)
 if (product.exists == true) {
-  console.log(producto)
+  console.log(product)
   actualizar.push(producto)
 } else {
-  console.log(producto)
+  console.log(product)
   crear.push(producto)
 }
 
