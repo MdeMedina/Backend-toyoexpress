@@ -110,29 +110,28 @@ const assingProducts = async (req, res) => {
 try {
 const {body} = req
 console.log(body)
-let actualizar = []
-let crear = []
-body.arr.forEach(async (product) => {
-const producto = await Producto.findOne({sku: product.sku})
-console.log(product.exists)
-if (product.exists == true) {
-  console.log(product)
-  actualizar.push(producto)
-} else {
-  console.log(product)
-  crear.push(producto)
+const crear = [];
+const actualizar = [];
+
+for (const product of body.arr) {
+  const producto = await Producto.findOne({ sku: product.sku });
+  console.log(product.exists);
+  
+  if (product.exists == true) {
+    console.log(product);
+    actualizar.push(producto);
+  } else {
+    console.log(product);
+    crear.push(producto);
+  }
 }
-
-})
-
 
 const data = {
   create: crear,
   update: actualizar,
 };
 
-console.log(data)
-
+console.log(data);
   let creacion = await WooCommerce.post("products/batch", data)
 
 
