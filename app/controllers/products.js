@@ -119,7 +119,7 @@ for (const product of body.arr) {
   
   if (product.exists == true) {
     const producto = await WooCommerce.get(`products?sku=${product.sku}`)
-    console.log(producto.id);
+    console.log(producto);
     actualizar.push(producto);
   } else {
     const producto = await Producto.findOne({ sku: product.sku });
