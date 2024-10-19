@@ -132,13 +132,10 @@ const data = {
 };
 
 
-  WooCommerce.post("products/batch", data)
-    .then((response) => {
-      console.log(response.data);
-    })
-    .catch((error) => {
-      console.log(error.response.data);
-    });
+  let creacion = await WooCommerce.post("products/batch", data)
+  console.log(creacion)
+
+
 
 
   // Parámetros para eliminar el mensaje en SQS
