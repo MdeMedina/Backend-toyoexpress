@@ -114,13 +114,15 @@ const crear = [];
 const actualizar = [];
 
 for (const product of body.arr) {
-  const producto = await Producto.findOne({ sku: product.sku });
+
   console.log(product.exists);
   
   if (product.exists == true) {
-    console.log(product);
+    const producto = await WooCommerce.get(`products?sku=${product.sku}`)
+    console.log(producto.id);
     actualizar.push(producto);
   } else {
+    const producto = await Producto.findOne({ sku: product.sku });
     console.log(product);
     crear.push(producto);
   }
