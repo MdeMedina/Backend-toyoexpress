@@ -122,7 +122,8 @@ if (product.exists == true) {
   console.log(product)
   crear.push(producto)
 }
-
+console.log("actualizar: " ,actualizar)
+console.log("crear: " ,crear)
 })
 
 
@@ -133,7 +134,7 @@ const data = {
 
 
   let creacion = await WooCommerce.post("products/batch", data)
-  console.log(creacion)
+  console.log(creacion.data)
 
 
 
