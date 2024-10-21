@@ -16,8 +16,9 @@ function esCorreoValido(correo) {
 
 
 
-const sendOrder = async (cliente, productos) => {
+const sendOrder = async (cliente, productos, corr) => {
   try {
+    console.log(corr)
     const wooProducts = productos.map(async producto => {
       const response = await WooCommerce.get(`products?sku=${producto["Código"]}`); 
       return response
@@ -40,7 +41,6 @@ const sendOrder = async (cliente, productos) => {
       }
       })
 
-      console.log(productsData)
 
      let billing = {
     first_name: cliente.Nombre,
@@ -59,12 +59,11 @@ const data = {
   meta_data:[
         {
             "key": "_numero_pedido_app",
-            "value": "123456Prueba"
+            "value": corr
         }
     ]
 };
 
-console.log(data)
 WooCommerce.post("orders", data)
   .then((response) => {
     console.log(response.data);
