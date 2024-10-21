@@ -64,6 +64,7 @@ const data = {
     ]
 };
 
+console.log(data)
 WooCommerce.post("orders", data)
   .then((response) => {
     console.log(response.data);
