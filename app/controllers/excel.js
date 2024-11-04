@@ -59,17 +59,9 @@ const fechaAct = async (req, res) => {
   try {
     const { body } = req;
     let arr = body;
+    console.log(arr)
 
-    // Elimina todos los documentos de la colección "Fecha"
-    Fecha.deleteMany({}, function (err) {
-      if (err) {
-        console.log(err);
-      } else {
-        console.log(
-          "Todos los documentos de la colección de fecha han sido eliminados."
-        );
-      }
-    });
+    
 
     // Inserta los nuevos documentos en la colección "Fecha"
     const fecha = await Fecha.insertMany(arr);
@@ -83,10 +75,12 @@ const fechaAct = async (req, res) => {
 };
 
 const fechaget = async (req, res) => {
-  let fecha = await Fecha.find({});
-  console.log(fecha[0]);
-  res.send({ fecha: fecha[0].fecha });
-};
+let fechas = await Fecha.find({})
+  .sort({ _id: -1 }) // Ordenar por fecha de creación descendente (los más recientes primero)
+  .limit(3);
+  console.log(fechas) // Limitar el resultado a los 3 objetos más recientes
+  res.send({ fechas });
+};4
 
 const getExcelClientes = async (condition, page) => {
 let codigo = condition ? { Nombre: new RegExp(condition.Nombre, "i")} : {};
@@ -103,7 +97,7 @@ let codigo = condition ? { Nombre: new RegExp(condition.Nombre, "i")} : {};
 const updateExcelClientes = async (req, res) => {
   const { body } = req;
   const array1 = body;
-  const array2 = await ExcelClientes.find({});
+
 
   ExcelClientes.deleteMany({}, function (err) {
     if (err) {

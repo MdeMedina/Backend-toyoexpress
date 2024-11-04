@@ -44,18 +44,24 @@ const sendOrder = async (cliente, productos, corr) => {
 
      let billing = {
     first_name: cliente.Nombre,
-    email: esCorreoValido(cliente["Correo Electrónico"]) ? cliente["Correo Electrónico"] : "correo@nodisponible.com",
-    phone: cliente["Teléfonos"]
+    email: esCorreoValido(cliente["Correo Electronico"]) ? cliente["Correo Electronico"] : "mamedina770@gmail.com",
+    phone: cliente["Telefonos"],
+    address_1: cliente["Direccion"],
+    state: cliente["Estado"],
+    city: cliente["Ciudad"],
   }
  let shipping = {
-    first_name: cliente["Persona Contacto"],
-
+    first_name: cliente["Nombre"],
+    address_1: cliente["Direccion"],
+    state: cliente["Estado"],
+    city: cliente["Ciudad"],
   }
 
 const data = {
   billing,
   shipping,
   line_items: productsData,
+  status: "pedidoapp",
   meta_data:[
         {
             "key": "_numero_pedido_app",
