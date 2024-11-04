@@ -13,20 +13,17 @@ const ExcelProductos = mongoose.model("Excel", {
 });
 
 const ExcelClientes = mongoose.model("Clientes", {
-  Código: { type: String, required: true },
-  Nombre: { type: String, required: true },
-  "Persona Contacto": { type: String },
-  Teléfonos: { type: String },
-  Fax: { type: String },
-  "Correo Electrónico": { type: String },
-  "Limite Credito": { type: String },
-  "Dias Credito": { type: String },
-  "Credito Disponible": { type: String },
-  "Precio de Venta": { type: String },
-  "Ultima Venta a Contado": { type: String },
-  "Ultima Venta a Crédito": { type: String },
-  "Vendedores Código": { type: String },
-  "Vendedores Nombre": { type: String },
+  Rif: {type: String},
+  "Nombre": {type: String},
+  "Vendedor": {type: String},
+  "Telefonos": {type: String},
+  "Correo Electronico": {type: String},
+  "Tipo de Precio": {type: String},
+  "Estado": {type: String},
+  "Ciudad": {type: String},
+  "Municipio": {type: String},
+  "Direccion": {type: String},
+  "Vendedores Código":{type: String}
 });
 
 module.exports = { ExcelProductos, ExcelClientes };

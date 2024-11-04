@@ -5,6 +5,7 @@ const http = require("http");
 const mongoose = require("mongoose");
 const { dbConnect } = require("./config/mongo");
 const { bodyParser } = require("body-parser");
+const { addClient, sendToClients } = require('./sseManager');
 const cors = require("cors");
 const PORT = process.env.PORT;
 dbConnect();
@@ -13,12 +14,20 @@ const app = express();
 let server = http.createServer(app);
 
 app.use(express.json({ limit: "10mb" }));
-app.use(cors());
+app.use(cors({
+  origin: 'http://front.toyoxpress.com/', // Reemplaza con el origen de tu frontend
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization']
+}));
 
 app.use("/users", require("./app/routes/users"));
 app.use(express.static("app"));
 app.use("/pdf", require("./app/routes/dataPDF"));
 app.use(express.static("app"));
+
+app.get('/events', (req, res) => {
+  addClient(res);
+});
 
 app.use("/excel", require("./app/routes/excel"));
 app.use(express.static("app"));
@@ -32,12 +41,18 @@ app.use(express.static("app"));
 app.use("/upload", require("./app/routes/upload"));
 app.use(express.static("app"));
 
+app.use("/orders", require("./app/routes/orders"));
+app.use(express.static("app"));
+
+app.use("/products", require("./app/routes/productos"));
+app.use(express.static("app"));
+
 app.use("/cuentas", require("./app/routes/cuentas"));
 app.use(express.static("app"));
 
 let io = new Server(server, {
   cors: {
-    origin: "http://front.toyoxpress.com",
+    origin: "http://front.toyoxpress.com/",
     methods: ["GET", "POST", "UPDATE"],
   },
 });
