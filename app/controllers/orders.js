@@ -2,9 +2,9 @@ const WooCommerceRestApi = require("@woocommerce/woocommerce-rest-api").default;
 // import WooCommerceRestApi from "@woocommerce/woocommerce-rest-api"; // Supports ESM
 
 const WooCommerce = new WooCommerceRestApi({
-  url: 'https://pruebas.toyoxpress.com/',
-  consumerKey: 'ck_252527c6a32ea50bbd68947d7f315eab83475a70',
-  consumerSecret: 'cs_8d2c05c03fa99e107891eae7348b31ae36fdb395',
+  url: 'https://toyoxpress.com/',
+  consumerKey: 'ck_a13ab00a4fb0397be1af94598ff616e5852c8d64',
+  consumerSecret: 'cs_e4b8eab412487d87b938bb46d60b966afcf4f4fd',
   version: 'wc/v3',
   queryStringAuth: true // Force Basic Authentication as query string true and using under HTTPS
 })
