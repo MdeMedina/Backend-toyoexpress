@@ -59,16 +59,6 @@ const sendError = (message) => {
   }
 };
 
-
-// Enviar un evento de ping para mantener la conexión abierta
-const sendPing = () => {
-  clients.forEach((client) => {
-    client.write('data: ping\n\n');
-  });
-};
-
-
-setInterval(sendPing, 25000);
 module.exports = {
   addClient,
   sendToClients,
