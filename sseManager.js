@@ -6,9 +6,10 @@ const generateUniqueId = () => {
 
 const addClient = async (res) => {
   try {
+      console.log("Creando cliente... sseManager.js")
     const clientId = generateUniqueId(); // Genera un ID único para el cliente
     clients.set(clientId, res);
-
+    console.log("cliente seteado", clients)
     await res.writeHead(200, {
       'Content-Type': 'text/event-stream',
       'Connection': 'keep-alive',
@@ -17,13 +18,14 @@ const addClient = async (res) => {
 
 
     res.write(`data: Welcome! Your client ID is: ${clientId}\n\n`);
-
+    
 
     res.on('close', () => {
       clients.delete(clientId);
     });
   } catch (error) {
     console.error('Error adding client:', error);
+    console.log("No pude crear el cliente!")
   }
 };
 
