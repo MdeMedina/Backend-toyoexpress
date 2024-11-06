@@ -46,7 +46,7 @@ const makeProducts = async (req, res) => {
         regular_price: producto["Precio Mayor"],
         sale_price: producto["Precio Oferta"],
         manage_stock: true,
-        status: "pending",
+        status: "publish",
         catalog_visibility: "hidden",
         stock_quantity: producto["Existencia Actual"],
         attributes: [{
@@ -123,6 +123,7 @@ for (const product of body.arr) {
     let productoLimpio = productoBD.toObject();
     let {_id, ...productoNuevo} = productoLimpio
     productoNuevo.id = producto.data[0].id
+    productoNuevo.featured = producto.data[0].featured
     console.log(productoNuevo)
     actualizar.push(productoNuevo);
   } else {
