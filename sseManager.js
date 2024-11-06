@@ -31,16 +31,16 @@ const addClient = async (res) => {
 
 const sendToClients = (message) => {
   try {
-    const lastClientId = Array.from(clients.keys()).pop(); // Obtener el ID del último cliente
-    const lastClient = clients.get(lastClientId); // Obtener el último cliente del Map
-
-    if (lastClient) {
-      lastClient.write(`data: ${JSON.stringify(message)}\n\n`);
-    } else {
+    if (clients.size === 0) {
       console.error('No clients available to send the message.');
+      return;
     }
+
+    clients.forEach((client) => {
+      client.write(`data: ${JSON.stringify(message)}\n\n`);
+    });
   } catch (error) {
-    console.error('Error sending message to the last client:', error);
+    console.error('Error sending message to clients:', error);
   }
 };
 
