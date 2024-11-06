@@ -26,6 +26,7 @@ app.use("/pdf", require("./app/routes/dataPDF"));
 app.use(express.static("app"));
 
 app.get('/events', (req, res) => {
+  console.log("llegue a events")
   addClient(res);
 });
 
