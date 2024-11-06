@@ -124,6 +124,7 @@ for (const product of body.arr) {
     let productoLimpio = productoBD.toObject();
     let {_id, ...productoNuevo} = productoLimpio
     productoNuevo.id = producto.data[0].id
+    productoNuevo.featured = producto.data[0].featured
     console.log(productoNuevo)
     actualizar.push(productoNuevo);
   } else {
