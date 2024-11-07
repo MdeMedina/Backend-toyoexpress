@@ -157,7 +157,7 @@ console.log(data);
   await client.send(deleteCommand);
   console.log("Mensaje eliminado de SQS");
 
-sendToClients({ index: body.index+1, maximo: body.maximo});
+sendToClients(JSON.stringify({ index: body.index+1, maximo: body.maximo}));
 
 if (arrayChunked.length > body.index + 1 ) {
   const params = {
