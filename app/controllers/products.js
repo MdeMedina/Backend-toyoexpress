@@ -178,6 +178,7 @@ if (arrayChunked.length > body.index + 1 ) {
 
 res.status(200).send({ message: "Datos Actualizados con exito!" });
 } catch (error) {
+console.log(error);
 sendError()
 }
 }
