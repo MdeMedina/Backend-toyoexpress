@@ -1,3 +1,5 @@
+const { io } = require("./server");
+
 let clients = new Map(); // Utilizando un Map para almacenar clientes con ID
 
 const generateUniqueId = () => {
@@ -28,18 +30,8 @@ const addClient = async (res) => {
 };
 
 const sendToClients = (message) => {
-  try {
-    const lastClientId = Array.from(clients.keys()).pop(); // Obtener el ID del último cliente
-    const lastClient = clients.get(lastClientId); // Obtener el último cliente del Map
-
-    if (lastClient) {
-      lastClient.write(`data: ${JSON.stringify(message)}\n\n`);
-    } else {
-      console.error('No clients available to send the message.');
-    }
-  } catch (error) {
-    console.error('Error sending message to the last client:', error);
-  }
+  io.to("logs").emit("recibir_logs", message);
+  console.log("Mensaje emitido a la sala 'logs':", message);
 };
 
 const sendError = (message) => {
