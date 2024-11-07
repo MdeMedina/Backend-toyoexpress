@@ -48,7 +48,6 @@ const makeProducts = async (req, res) => {
         sale_price: producto["Precio Oferta"],
         manage_stock: true,
         status: "publish",
-        catalog_visibility: "hidden",
         stock_quantity: producto["Existencia Actual"],
         attributes: [{
           id: 1,
