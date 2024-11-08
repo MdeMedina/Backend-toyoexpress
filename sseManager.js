@@ -57,6 +57,5 @@ const sendPing = () => {
 setInterval(sendPing, 25000);
 module.exports = {
   addClient,
-  sendToClients,
   sendError
 }
