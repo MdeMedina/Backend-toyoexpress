@@ -78,7 +78,8 @@ io.on("connection", (socket) => {
 });
 
 
-const sendToClients = (message) => {
+global.shared = {};
+global.shared.sendToClients = (message) => {
   io.to("logs").emit("recibir_logs", message);
   console.log("Mensaje emitido a la sala 'logs':", message);
 };
@@ -87,5 +88,3 @@ const sendToClients = (message) => {
 server.listen(PORT, () => {
   console.log("listening in port " + PORT);
 });
-
-module.exports = {sendToClients};

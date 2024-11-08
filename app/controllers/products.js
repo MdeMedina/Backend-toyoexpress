@@ -1,4 +1,3 @@
-const { sendToClients } = require("../..");
 const { Producto } = require("../models/product");
 const WooCommerceRestApi = require("@woocommerce/woocommerce-rest-api").default;
 const { SQSClient, SendMessageCommand, DeleteMessageCommand } = require("@aws-sdk/client-sqs");
@@ -155,8 +154,7 @@ console.log(data);
   // Envío del comando para eliminar el mensaje en SQS
   await client.send(deleteCommand);
   console.log("Mensaje eliminado de SQS");
-
-sendToClients(JSON.stringify({ index: body.index+1, maximo: body.maximo}));
+global.shared.sendToClients(JSON.stringify({ index: body.index+1, maximo: body.maximo}));
 
 if (arrayChunked.length > body.index + 1 ) {
   const params = {
