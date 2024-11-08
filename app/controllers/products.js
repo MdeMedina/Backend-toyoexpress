@@ -1,5 +1,5 @@
+const { sendToClients } = require("../..");
 const { Producto } = require("../models/product");
-const { sendToClients, sendError } = require('../../index')
 const WooCommerceRestApi = require("@woocommerce/woocommerce-rest-api").default;
 const { SQSClient, SendMessageCommand, DeleteMessageCommand } = require("@aws-sdk/client-sqs");
 // import WooCommerceRestApi from "@woocommerce/woocommerce-rest-api"; // Supports ESM
