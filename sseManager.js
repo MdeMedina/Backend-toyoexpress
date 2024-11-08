@@ -29,10 +29,6 @@ const addClient = async (res) => {
   }
 };
 
-const sendToClients = (message) => {
-  io.to("logs").emit("recibir_logs", message);
-  console.log("Mensaje emitido a la sala 'logs':", message);
-};
 
 const sendError = (message) => {
   try {

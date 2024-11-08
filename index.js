@@ -5,7 +5,7 @@ const http = require("http");
 const mongoose = require("mongoose");
 const { dbConnect } = require("./config/mongo");
 const { bodyParser } = require("body-parser");
-const { addClient, sendToClients } = require('./sseManager');
+const { addClient } = require('./sseManager');
 const cors = require("cors");
 const PORT = process.env.PORT;
 dbConnect();
@@ -77,8 +77,15 @@ io.on("connection", (socket) => {
   });
 });
 
-module.exports = { io };
+
+const sendToClients = (message) => {
+  io.to("logs").emit("recibir_logs", message);
+  console.log("Mensaje emitido a la sala 'logs':", message);
+};
+
 
 server.listen(PORT, () => {
   console.log("listening in port " + PORT);
 });
+
+module.exports = {sendToClients};

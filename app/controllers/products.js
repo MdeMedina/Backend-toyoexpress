@@ -1,5 +1,5 @@
 const { Producto } = require("../models/product");
-const { sendToClients, sendError } = require('../../sseManager')
+const { sendToClients, sendError } = require('../../index')
 const WooCommerceRestApi = require("@woocommerce/woocommerce-rest-api").default;
 const { SQSClient, SendMessageCommand, DeleteMessageCommand } = require("@aws-sdk/client-sqs");
 // import WooCommerceRestApi from "@woocommerce/woocommerce-rest-api"; // Supports ESM
@@ -47,7 +47,6 @@ const makeProducts = async (req, res) => {
         sale_price: producto["Precio Oferta"],
         manage_stock: true,
         status: "publish",
-        catalog_visibility: "hidden",
         stock_quantity: producto["Existencia Actual"],
         attributes: [{
           id: 1,
@@ -79,7 +78,7 @@ const makeProducts = async (req, res) => {
  Producto.insertMany(arrayBueno);
 
   const params = {
-    QueueUrl: "https://sqs.us-east-2.amazonaws.com/872515257475/Toyoxpress.fifo",
+    QueueUrl: "https://sqs.us-east-2.amazonaws.com/872515257475/ToyoxpressDev.fifo",
     MessageBody: JSON.stringify({arr: arrayChunked[0], index: 0, maximo: length}),
     MessageGroupId: "grupo-1",
     MessageDeduplicationId: `0`, 
@@ -146,7 +145,7 @@ console.log(data);
 
   // Parámetros para eliminar el mensaje en SQS
  const deleteParams = {
-    QueueUrl: 'https://sqs.us-east-2.amazonaws.com/872515257475/Toyoxpress.fifo',
+    QueueUrl: 'https://sqs.us-east-2.amazonaws.com/872515257475/ToyoxpressDev.fifo',
     ReceiptHandle: body.receiptHandle
   };
 
@@ -161,7 +160,7 @@ sendToClients(JSON.stringify({ index: body.index+1, maximo: body.maximo}));
 
 if (arrayChunked.length > body.index + 1 ) {
   const params = {
-    QueueUrl: "https://sqs.us-east-2.amazonaws.com/872515257475/Toyoxpress.fifo",
+    QueueUrl: "https://sqs.us-east-2.amazonaws.com/872515257475/ToyoxpressDev.fifo",
     MessageBody: JSON.stringify({arr: arrayChunked[body.index+1], index: body.index+1, maximo: body.maximo}),
     MessageGroupId: "grupo-1",
     MessageDeduplicationId: `${body.index+1}`, 
