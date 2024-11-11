@@ -112,7 +112,6 @@ const actualizar = [];
 
 for (const product of body.arr) {
 
-  console.log(product.exists);
   
   if (product.exists == true) {
     const producto = await WooCommerce.get(`products?sku=${product.sku}`)
@@ -121,11 +120,9 @@ for (const product of body.arr) {
     let {_id, ...productoNuevo} = productoLimpio
     productoNuevo.id = producto.data[0].id
     productoNuevo.featured = producto.data[0].featured
-    console.log(productoNuevo)
     actualizar.push(productoNuevo);
   } else {
     const producto = await Producto.findOne({ sku: product.sku });
-    console.log(product);
     crear.push(producto);
   }
 }
@@ -154,6 +151,7 @@ const data = {
   console.log("Mensaje eliminado de SQS");
   
   if (arrayChunked.length > body.index + 1 ) {
+    console.log("Entre en los params")
     const params = {
       QueueUrl: "https://sqs.us-east-2.amazonaws.com/872515257475/Toyoxpress.fifo",
       MessageBody: JSON.stringify({arr: arrayChunked[body.index+1], index: body.index+1, maximo: body.maximo}),
