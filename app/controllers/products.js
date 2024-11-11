@@ -107,7 +107,6 @@ const makeProducts = async (req, res) => {
 const assingProducts = async (req, res) => {
 try {
 const {body} = req
-console.log(body)
 const crear = [];
 const actualizar = [];
 
@@ -136,7 +135,6 @@ const data = {
   update: actualizar,
 };
 
-console.log(data);
   let creacion = await WooCommerce.post("products/batch", data)
 
 
@@ -154,26 +152,24 @@ console.log(data);
   // Envío del comando para eliminar el mensaje en SQS
   await client.send(deleteCommand);
   console.log("Mensaje eliminado de SQS");
-global.shared.sendToClients(JSON.stringify({ index: body.index+1, maximo: body.maximo}));
-
-if (arrayChunked.length > body.index + 1 ) {
-  const params = {
-    QueueUrl: "https://sqs.us-east-2.amazonaws.com/872515257475/Toyoxpress.fifo",
-    MessageBody: JSON.stringify({arr: arrayChunked[body.index+1], index: body.index+1, maximo: body.maximo}),
-    MessageGroupId: "grupo-1",
-    MessageDeduplicationId: `${body.index+1}`, 
-  };
-  const command = new SendMessageCommand(params);
-  try {
-    const data = await client.send(command);
-     console.log("Mensaje enviado: ", body.index+1)
-  } catch (error) {
-    console.error("Error al enviar el mensaje:", error);
+  
+  if (arrayChunked.length > body.index + 1 ) {
+    const params = {
+      QueueUrl: "https://sqs.us-east-2.amazonaws.com/872515257475/Toyoxpress.fifo",
+      MessageBody: JSON.stringify({arr: arrayChunked[body.index+1], index: body.index+1, maximo: body.maximo}),
+      MessageGroupId: "grupo-1",
+      MessageDeduplicationId: `${body.index+1}`, 
+    };
+    const command = new SendMessageCommand(params);
+    try {
+      const data = await client.send(command);
+      console.log("Mensaje enviado: ", body.index+1)
+    } catch (error) {
+      console.error("Error al enviar el mensaje:", error);
+    }
   }
-}
-
-
-res.status(200).send({ message: "Datos Actualizados con exito!" });
+  res.status(200).send({ message: "Datos Actualizados con exito!" });
+  global.shared.sendToClients(JSON.stringify({ index: body.index+1, maximo: body.maximo}));
 } catch (error) {
 console.log(error);
 }
