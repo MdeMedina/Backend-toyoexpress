@@ -149,7 +149,9 @@ const data = {
   // Envío del comando para eliminar el mensaje en SQS
   await client.send(deleteCommand);
   console.log("Mensaje eliminado de SQS");
-  
+  console.log("Estoy a punto de entrar en params")
+  console.log("length de array chunked: ", arrayChunked.length)
+  console.log(arrayChunked.length > body.index + 1 )
   if (arrayChunked.length > body.index + 1 ) {
     console.log("Entre en los params")
     const params = {
