@@ -1,3 +1,5 @@
+
+
 let clients = new Map(); // Utilizando un Map para almacenar clientes con ID
 
 const generateUniqueId = () => {
@@ -29,20 +31,6 @@ const addClient = async (res) => {
   }
 };
 
-const sendToClients = (message) => {
-  try {
-    if (clients.size === 0) {
-      console.error('No clients available to send the message.');
-      return;
-    }
-
-    clients.forEach((client) => {
-      client.write(`data: ${JSON.stringify(message)}\n\n`);
-    });
-  } catch (error) {
-    console.error('Error sending message to clients:', error);
-  }
-};
 
 const sendError = (message) => {
   try {
@@ -71,6 +59,5 @@ const sendPing = () => {
 setInterval(sendPing, 25000);
 module.exports = {
   addClient,
-  sendToClients,
   sendError
 }

@@ -1,5 +1,4 @@
 const { Producto } = require("../models/product");
-const { sendToClients, sendError } = require('../../sseManager')
 const WooCommerceRestApi = require("@woocommerce/woocommerce-rest-api").default;
 const { SQSClient, SendMessageCommand, DeleteMessageCommand } = require("@aws-sdk/client-sqs");
 // import WooCommerceRestApi from "@woocommerce/woocommerce-rest-api"; // Supports ESM
@@ -108,76 +107,75 @@ const makeProducts = async (req, res) => {
 
 const assingProducts = async (req, res) => {
 try {
-const {body} = req
-console.log(body)
-const crear = [];
+const { body } = req;
+let crear = [];
 const actualizar = [];
 
-for (const product of body.arr) {
+// Arrays para almacenar los SKUs de productos que existen y los que no
+const skusExistentes = [];
+const skusNoExistentes = [];
 
-  console.log(product.exists);
-  
-  if (product.exists == true) {
-    const producto = await WooCommerce.get(`products?sku=${product.sku}`)
-    let productoBD = await Producto.findOne({ sku: product.sku });
-    let productoLimpio = productoBD.toObject();
-    let {_id, ...productoNuevo} = productoLimpio
-    productoNuevo.id = producto.data[0].id
-    console.log(productoNuevo)
-    actualizar.push(productoNuevo);
+
+// Clasificar los productos en los arrays correspondientes
+for (const product of body.arr) {
+  if (product.exists) {
+    skusExistentes.push(product.sku);
   } else {
-    const producto = await Producto.findOne({ sku: product.sku });
-    console.log(product);
-    crear.push(producto);
+    skusNoExistentes.push(product.sku);
   }
 }
 
+// Consultar MongoDB para obtener los productos que existen y los que no
+const productosExistentes = await Producto.find({ sku: { $in: skusExistentes } });
+crear = await Producto.find({ sku: { $in: skusNoExistentes } });
+
+// Preparar productos para el array de `actualizar`
+productosExistentes.forEach(product => {
+body.arr.map(pod => {
+  console.log(pod)
+  if (pod.sku === product.sku) {
+     const productoLimpio = product.toObject(); // Convertimos a objeto simple
+    productoLimpio.id = pod.id_producto;    // Añadimos el `id` del producto en `body.arr`
+    actualizar.push(productoLimpio);
+  }
+})
+});
+console.log("Crear: ", crear)
+console.log("Actualizar: ",actualizar)
+// Preparar el objeto `data` para el batch
 const data = {
-  create: crear,
-  update: actualizar,
+  create: crear.map(product => product.toObject()), // Convertimos a objeto simple
+  update: actualizar.map(product => product),       // `actualizar` ya contiene objetos simples
 };
 
-console.log(data);
-  let creacion = await WooCommerce.post("products/batch", data)
+// Enviar los datos a WooCommerce
+let creacion = await WooCommerce.post("products/batch", data);
 
 
-
-
-  // Parámetros para eliminar el mensaje en SQS
- const deleteParams = {
-    QueueUrl: 'https://sqs.us-east-2.amazonaws.com/872515257475/Toyoxpress.fifo',
-    ReceiptHandle: body.receiptHandle
-  };
-
-  // Comando para eliminar el mensaje
-  const deleteCommand = new DeleteMessageCommand(deleteParams);
-  
-  // Envío del comando para eliminar el mensaje en SQS
-  await client.send(deleteCommand);
   console.log("Mensaje eliminado de SQS");
-
-sendToClients({ index: body.index+1, maximo: body.maximo});
-
-if (arrayChunked.length > body.index + 1 ) {
-  const params = {
-    QueueUrl: "https://sqs.us-east-2.amazonaws.com/872515257475/Toyoxpress.fifo",
-    MessageBody: JSON.stringify({arr: arrayChunked[body.index+1], index: body.index+1, maximo: body.maximo}),
-    MessageGroupId: "grupo-1",
-    MessageDeduplicationId: `${body.index+1}`, 
-  };
-  const command = new SendMessageCommand(params);
-  try {
-    const data = await client.send(command);
-     console.log("Mensaje enviado: ", body.index+1)
-  } catch (error) {
-    console.error("Error al enviar el mensaje:", error);
+  console.log("Estoy a punto de entrar en params")
+  console.log("length de array chunked: ", arrayChunked.length)
+  console.log(arrayChunked.length > body.index + 1 )
+  if (arrayChunked.length > body.index + 1 ) {
+    console.log("Entre en los params")
+    const params = {
+      QueueUrl: "https://sqs.us-east-2.amazonaws.com/872515257475/Toyoxpress.fifo",
+      MessageBody: JSON.stringify({arr: arrayChunked[body.index+1], index: body.index+1, maximo: body.maximo}),
+      MessageGroupId: "grupo-1", 
+      MessageDeduplicationId: `${body.index+1}`, 
+    };
+    const command = new SendMessageCommand(params);
+    try {
+      const data = await client.send(command);
+      console.log("Mensaje enviado: ", body.index+1)
+    } catch (error) {
+      console.error("Error al enviar el mensaje:", error);
+    }
   }
-}
-
-
-res.status(200).send({ message: "Datos Actualizados con exito!" });
+  res.status(200).send({ message: "Datos Actualizados con exito!" });
+  global.shared.sendToClients(JSON.stringify({ index: body.index+1, maximo: body.maximo}));
 } catch (error) {
-sendError()
+console.log(error);
 }
 }
 
