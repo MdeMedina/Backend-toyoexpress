@@ -1,4 +1,4 @@
-const { io } = require("./index");
+
 
 let clients = new Map(); // Utilizando un Map para almacenar clientes con ID
 
