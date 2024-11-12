@@ -133,7 +133,7 @@ body.arr.map(pod => {
   console.log(pod)
   if (pod.sku === product.sku) {
      const productoLimpio = product.toObject(); // Convertimos a objeto simple
-    productoLimpio.id = pod.id;    // Añadimos el `id` del producto en `body.arr`
+    productoLimpio.id = pod.id_producto;    // Añadimos el `id` del producto en `body.arr`
     actualizar.push(productoLimpio);
   }
 })
