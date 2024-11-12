@@ -129,12 +129,14 @@ crear = await Producto.find({ sku: { $in: skusNoExistentes } });
 
 // Preparar productos para el array de `actualizar`
 productosExistentes.forEach(product => {
-  const index = body.arr.findIndex(item => item.sku === product.sku);
-  if (index !== -1) {
-    const productoLimpio = product.toObject(); // Convertimos a objeto simple
-    productoLimpio.id = body.arr[index].id;    // Añadimos el `id` del producto en `body.arr`
+body.arr.map(pod => {
+  console.log(pod)
+  if (pod.sku === product.sku) {
+     const productoLimpio = product.toObject(); // Convertimos a objeto simple
+    productoLimpio.id = pod.id;    // Añadimos el `id` del producto en `body.arr`
     actualizar.push(productoLimpio);
   }
+})
 });
 console.log("Crear: ", crear)
 console.log("Actualizar: ",actualizar)
