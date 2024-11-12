@@ -110,22 +110,33 @@ const {body} = req
 const crear = [];
 const actualizar = [];
 
-for (const product of body.arr) {
+// Arrays para almacenar los SKUs de productos que existen y los que no
+const skusExistentes = [];
+const skusNoExistentes = [];
 
-  
-  if (product.exists == true) {
-    const producto = await WooCommerce.get(`products?sku=${product.sku}`)
-    let productoBD = await Producto.findOne({ sku: product.sku });
-    let productoLimpio = productoBD.toObject();
-    let {_id, ...productoNuevo} = productoLimpio
-    productoNuevo.id = producto.data[0].id
-    productoNuevo.featured = producto.data[0].featured
-    actualizar.push(productoNuevo);
+// Clasificar los productos en los arrays correspondientes
+for (const product of body.arr) {
+  if (product.exists) {
+    skusExistentes.push(product.sku);
   } else {
-    const producto = await Producto.findOne({ sku: product.sku });
-    crear.push(producto);
+    skusNoExistentes.push(product.sku);
   }
 }
+
+// Consultar MongoDB para obtener los productos que existen y los que no
+const productosExistentes = await Producto.find({ sku: { $in: skusExistentes } });
+crear = await Producto.find({ sku: { $in: skusNoExistentes } });
+
+productosExistentes.map(product => {
+  const index = body.arr.findIndex(item => item.sku === product.sku);
+  if (index !== -1) {
+    product.id = body.arr[index].id; // Usamos el `id` del producto en `body.arr`
+    actualizar.push(product);
+  }
+});
+
+// Ahora puedes trabajar con los arrays productosExistentes y productosNoExistentes
+
 
 const data = {
   create: crear,
@@ -135,19 +146,6 @@ const data = {
   let creacion = await WooCommerce.post("products/batch", data)
 
 
-
-
-  // Parámetros para eliminar el mensaje en SQS
- const deleteParams = {
-    QueueUrl: 'https://sqs.us-east-2.amazonaws.com/872515257475/Toyoxpress.fifo',
-    ReceiptHandle: body.receiptHandle
-  };
-
-  // Comando para eliminar el mensaje
-  const deleteCommand = new DeleteMessageCommand(deleteParams);
-  
-  // Envío del comando para eliminar el mensaje en SQS
-  await client.send(deleteCommand);
   console.log("Mensaje eliminado de SQS");
   console.log("Estoy a punto de entrar en params")
   console.log("length de array chunked: ", arrayChunked.length)
