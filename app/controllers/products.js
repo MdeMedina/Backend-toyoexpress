@@ -106,8 +106,8 @@ const makeProducts = async (req, res) => {
 
 const assingProducts = async (req, res) => {
 try {
-const {body} = req
-const crear = [];
+const { body } = req;
+let crear = [];
 const actualizar = [];
 
 // Arrays para almacenar los SKUs de productos que existen y los que no
@@ -127,23 +127,24 @@ for (const product of body.arr) {
 const productosExistentes = await Producto.find({ sku: { $in: skusExistentes } });
 crear = await Producto.find({ sku: { $in: skusNoExistentes } });
 
-productosExistentes.map(product => {
+// Preparar productos para el array de `actualizar`
+productosExistentes.forEach(product => {
   const index = body.arr.findIndex(item => item.sku === product.sku);
   if (index !== -1) {
-    product.id = body.arr[index].id; // Usamos el `id` del producto en `body.arr`
-    actualizar.push(product);
+    const productoLimpio = product.toObject(); // Convertimos a objeto simple
+    productoLimpio.id = body.arr[index].id;    // Añadimos el `id` del producto en `body.arr`
+    actualizar.push(productoLimpio);
   }
 });
 
-// Ahora puedes trabajar con los arrays productosExistentes y productosNoExistentes
-
-
+// Preparar el objeto `data` para el batch
 const data = {
-  create: crear,
-  update: actualizar,
+  create: crear.map(product => product.toObject()), // Convertimos a objeto simple
+  update: actualizar.map(product => product),       // `actualizar` ya contiene objetos simples
 };
 
-  let creacion = await WooCommerce.post("products/batch", data)
+// Enviar los datos a WooCommerce
+let creacion = await WooCommerce.post("products/batch", data);
 
 
   console.log("Mensaje eliminado de SQS");
