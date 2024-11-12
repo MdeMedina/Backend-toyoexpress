@@ -153,8 +153,8 @@ let creacion = await WooCommerce.post("products/batch", data);
   console.log("Mensaje eliminado de SQS");
   console.log("Estoy a punto de entrar en params")
   console.log("length de array chunked: ", arrayChunked.length)
-  console.log(arrayChunked.length >= body.index + 1 )
-  if (arrayChunked.length >= body.index + 1 ) {
+  console.log(arrayChunked.length > body.index + 1 )
+  if (arrayChunked.length > body.index + 1 ) {
     console.log("Entre en los params")
     const params = {
       QueueUrl: "https://sqs.us-east-2.amazonaws.com/872515257475/Toyoxpress.fifo",
