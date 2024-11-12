@@ -156,7 +156,7 @@ let creacion = await WooCommerce.post("products/batch", data);
     const params = {
       QueueUrl: "https://sqs.us-east-2.amazonaws.com/872515257475/Toyoxpress.fifo",
       MessageBody: JSON.stringify({arr: arrayChunked[body.index+1], index: body.index+1, maximo: body.maximo}),
-      MessageGroupId: "grupo-1",
+      MessageGroupId: "grupo-1", 
       MessageDeduplicationId: `${body.index+1}`, 
     };
     const command = new SendMessageCommand(params);
