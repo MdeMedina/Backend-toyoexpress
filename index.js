@@ -6,6 +6,7 @@ const mongoose = require("mongoose");
 const { dbConnect } = require("./config/mongo");
 const { bodyParser } = require("body-parser");
 const { addClient } = require('./sseManager');
+const path = require('path');
 const cors = require("cors");
 const PORT = process.env.PORT;
 dbConnect();
@@ -27,6 +28,18 @@ app.use(express.static("app"));
 
 app.get('/events', (req, res) => {
   addClient(res);
+});
+
+const logFilePath = path.join(__dirname, 'backend_logs', 'logs.txt');
+
+// Endpoint para descargar el archivo de logs
+app.get('/download-logs', (req, res) => {
+  res.download(logFilePath, 'logs.txt', (err) => {
+    if (err) {
+      console.error('Error al descargar el archivo:', err);
+      res.status(500).send('Error al descargar el archivo.');
+    }
+  });
 });
 
 app.use("/excel", require("./app/routes/excel"));

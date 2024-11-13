@@ -1,6 +1,51 @@
 const { Producto } = require("../models/product");
 const WooCommerceRestApi = require("@woocommerce/woocommerce-rest-api").default;
 const { SQSClient, SendMessageCommand, DeleteMessageCommand } = require("@aws-sdk/client-sqs");
+const fs = require('fs');
+const path = require('path');
+
+// Ruta de la carpeta de logs en el directorio padre
+const logDirectory = path.join(__dirname, '..', 'backend_logs');
+
+// Ruta completa del archivo de logs
+const logFilePath = path.join(logDirectory, 'logs.txt');
+
+// Función para crear la carpeta si no existe
+function createLogDirectory() {
+  if (!fs.existsSync(logDirectory)) {
+    fs.mkdirSync(logDirectory, { recursive: true }); // Crea la carpeta si no existe, incluso en subdirectorios
+    console.log('Carpeta "backend_logs" creada en el directorio padre.');
+  }
+}
+
+// Función para borrar el archivo de logs y crear uno nuevo
+function resetLogFile() {
+  // Asegúrate de que la carpeta de logs exista antes de intentar crear el archivo
+  createLogDirectory();
+  
+  if (fs.existsSync(logFilePath)) {
+    fs.unlinkSync(logFilePath); // Elimina el archivo si existe
+    console.log('Archivo de logs borrado y reemplazado.');
+  }
+  // Crear un archivo nuevo vacío
+  fs.writeFileSync(logFilePath, '');
+  console.log('Nuevo archivo de logs generado.');
+}
+
+// Función para generar un log
+function logMessage(message) {
+  const logMessage = `${new Date().toISOString()} - ${message}\n`;
+  
+  // Asegúrate de que la carpeta de logs exista antes de escribir
+  createLogDirectory();
+  
+  // Escribir el mensaje en el archivo de logs
+  fs.appendFile(logFilePath, logMessage, (err) => {
+    if (err) {
+      console.error('Error escribiendo en el archivo de log:', err);
+    }
+  });
+}
 // import WooCommerceRestApi from "@woocommerce/woocommerce-rest-api"; // Supports ESM
 
 
@@ -110,6 +155,10 @@ const { body } = req;
 let crear = [];
 const actualizar = [];
 
+
+if (body.index === 0) {
+  resetLogFile()
+}
 // Arrays para almacenar los SKUs de productos que existen y los que no
 const skusExistentes = [];
 const skusNoExistentes = [];
@@ -147,8 +196,8 @@ const data = {
 };
 
 // Enviar los datos a WooCommerce
-let creacion = await WooCommerce.post("products/batch", data);
-
+  let creacion = await WooCommerce.post("products/batch", data);
+  logMessage(`mensaje ${body.index}: ${creacion}`)
 
   console.log("Mensaje eliminado de SQS");
   console.log("Estoy a punto de entrar en params")
@@ -169,11 +218,15 @@ let creacion = await WooCommerce.post("products/batch", data);
     } catch (error) {
       console.error("Error al enviar el mensaje:", error);
     }
+  } else {
+
   }
   res.status(200).send({ message: "Datos Actualizados con exito!" });
-  global.shared.sendToClients(JSON.stringify({ index: body.index+1, maximo: body.maximo}));
+  global.shared.sendToClients(JSON.stringify({ index: body.index+1, maximo: body.maximo, estado: true}));
 } catch (error) {
 console.log(error);
+global.shared.sendToClients(JSON.stringify({ index: body.index+1, maximo: body.maximo, estado: false}));
+logMessage(`La carga fallo debido a: ${error}` )
 }
 }
 
