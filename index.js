@@ -98,6 +98,11 @@ global.shared.sendToClients = (message) => {
   console.log("Mensaje emitido a la sala 'logs':", message);
 };
 
+global.shared.sendFecha = (message) => {
+  io.to("UF").emit("recibir_fecha", message);
+;
+};
+
 
 server.listen(PORT, () => {
   console.log("listening in port " + PORT);
