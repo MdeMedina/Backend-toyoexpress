@@ -50,12 +50,13 @@ function logMessage(message) {
 
 
 const WooCommerce = new WooCommerceRestApi({
-  url: 'https://pruebas.toyoxpress.com/',
-  consumerKey: 'ck_252527c6a32ea50bbd68947d7f315eab83475a70',
-  consumerSecret: 'cs_8d2c05c03fa99e107891eae7348b31ae36fdb395',
+  url: 'https://toyoxpress.com/',
+  consumerKey: 'ck_a13ab00a4fb0397be1af94598ff616e5852c8d64',
+  consumerSecret: 'cs_e4b8eab412487d87b938bb46d60b966afcf4f4fd',
   version: 'wc/v3',
   queryStringAuth: true // Force Basic Authentication as query string true and using under HTTPS
 })
+
 
 const client = new SQSClient({ region: "us-east-2",   credentials: {
     accessKeyId: process.env.AWS_ACCESS_KEY_ID,
@@ -162,6 +163,7 @@ if (body.index === 0) {
 // Arrays para almacenar los SKUs de productos que existen y los que no
 const skusExistentes = [];
 const skusNoExistentes = [];
+
 
 // Clasificar los productos en los arrays correspondientes
 for (const product of body.arr) {

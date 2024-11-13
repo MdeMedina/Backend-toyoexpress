@@ -16,7 +16,7 @@ let server = http.createServer(app);
 
 app.use(express.json({ limit: "10mb" }));
 app.use(cors({
-  origin: 'http://localhost:3000', // Reemplaza con el origen de tu frontend
+  origin: 'http://front.toyoxpress.com', // Reemplaza con el origen de tu frontend
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
   allowedHeaders: ['Content-Type', 'Authorization']
 }));
@@ -27,6 +27,7 @@ app.use("/pdf", require("./app/routes/dataPDF"));
 app.use(express.static("app"));
 
 app.get('/events', (req, res) => {
+  console.log("llegue a events index.js")
   addClient(res);
 });
 
@@ -65,7 +66,7 @@ app.use(express.static("app"));
 
 let io = new Server(server, {
   cors: {
-    origin: "http://localhost:3000",
+    origin: "http://front.toyoxpress.com",
     methods: ["GET", "POST", "UPDATE"],
   },
 });
