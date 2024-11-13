@@ -16,7 +16,7 @@ let server = http.createServer(app);
 
 app.use(express.json({ limit: "10mb" }));
 app.use(cors({
-  origin: 'http://front.toyoxpress.com', // Reemplaza con el origen de tu frontend
+  origin: 'http://localhost:3000', // Reemplaza con el origen de tu frontend
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
   allowedHeaders: ['Content-Type', 'Authorization']
 }));
@@ -66,7 +66,7 @@ app.use(express.static("app"));
 
 let io = new Server(server, {
   cors: {
-    origin: "http://front.toyoxpress.com",
+    origin: "http://localhost:3000",
     methods: ["GET", "POST", "UPDATE"],
   },
 });
