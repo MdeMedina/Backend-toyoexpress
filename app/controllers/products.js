@@ -49,13 +49,14 @@ function logMessage(message) {
 // import WooCommerceRestApi from "@woocommerce/woocommerce-rest-api"; // Supports ESM
 
 
+// Inicializa el cliente de WooCommerce
 const WooCommerce = new WooCommerceRestApi({
-  url: 'https://toyoxpress.com/',
-  consumerKey: 'ck_a13ab00a4fb0397be1af94598ff616e5852c8d64',
-  consumerSecret: 'cs_e4b8eab412487d87b938bb46d60b966afcf4f4fd',
+  url: 'https://pruebas.toyoxpress.com/',
+  consumerKey: 'ck_252527c6a32ea50bbd68947d7f315eab83475a70',
+  consumerSecret: 'cs_8d2c05c03fa99e107891eae7348b31ae36fdb395',
   version: 'wc/v3',
-  queryStringAuth: true // Force Basic Authentication as query string true and using under HTTPS
-})
+  queryStringAuth: true, // Forzar autenticación básica en la cadena de consulta (HTTPS)
+});
 
 
 const client = new SQSClient({ region: "us-east-2",   credentials: {
@@ -123,7 +124,7 @@ const makeProducts = async (req, res) => {
  Producto.insertMany(arrayBueno);
 
   const params = {
-    QueueUrl: "https://sqs.us-east-2.amazonaws.com/872515257475/Toyoxpress.fifo",
+    QueueUrl: "https://sqs.us-east-2.amazonaws.com/872515257475/ToyoxpressDev.fifo",
     MessageBody: JSON.stringify({arr: arrayChunked[0], index: 0, maximo: length}),
     MessageGroupId: "grupo-1",
     MessageDeduplicationId: `0`, 
@@ -208,7 +209,7 @@ const data = {
   if (arrayChunked.length > body.index + 1 ) {
     console.log("Entre en los params")
     const params = {
-      QueueUrl: "https://sqs.us-east-2.amazonaws.com/872515257475/Toyoxpress.fifo",
+      QueueUrl: "https://sqs.us-east-2.amazonaws.com/872515257475/ToyoxpressDev.fifo",
       MessageBody: JSON.stringify({arr: arrayChunked[body.index+1], index: body.index+1, maximo: body.maximo}),
       MessageGroupId: "grupo-1", 
       MessageDeduplicationId: `${body.index+1}`, 
