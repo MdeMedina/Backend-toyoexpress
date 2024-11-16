@@ -7,6 +7,7 @@ const { dbConnect } = require("./config/mongo");
 const { bodyParser } = require("body-parser");
 const { addClient } = require('./sseManager');
 const path = require('path');
+const fs = require('fs');
 const cors = require("cors");
 const PORT = process.env.PORT;
 const winston = require('winston');
