@@ -135,7 +135,6 @@ crear = await Producto.find({ sku: { $in: skusNoExistentes } });
 // Preparar productos para el array de `actualizar`
 productosExistentes.forEach(product => {
 body.arr.map(pod => {
-  console.log(pod)
   if (pod.sku === product.sku) {
      const productoLimpio = product.toObject(); // Convertimos a objeto simple
     productoLimpio.id = pod.id_producto;    // Añadimos el `id` del producto en `body.arr`
@@ -143,8 +142,6 @@ body.arr.map(pod => {
   }
 })
 });
-console.log("Crear: ", crear)
-console.log("Actualizar: ",actualizar)
 // Preparar el objeto `data` para el batch
 const data = {
   create: crear.map(product => product.toObject()), // Convertimos a objeto simple
@@ -155,11 +152,8 @@ const data = {
   let creacion = await WooCommerce.post("products/batch", data);
 
   console.log("Mensaje eliminado de SQS");
-  console.log("Estoy a punto de entrar en params")
-  console.log("length de array chunked: ", arrayChunked.length)
-  console.log(arrayChunked.length > body.index + 1 )
+
   if (arrayChunked.length > body.index + 1 ) {
-    console.log("Entre en los params")
     const params = {
       QueueUrl: "https://sqs.us-east-2.amazonaws.com/872515257475/Toyoxpress.fifo",
       MessageBody: JSON.stringify({arr: arrayChunked[body.index+1], index: body.index+1, maximo: body.maximo}),
@@ -169,7 +163,6 @@ const data = {
     const command = new SendMessageCommand(params);
     try {
       const data = await client.send(command);
-      console.log("Mensaje enviado: ", body.index+1)
     } catch (error) {
       console.error("Error al enviar el mensaje:", error);
     }
