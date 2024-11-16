@@ -62,7 +62,7 @@ global.shared.logError = (error) => {
 };
 
 // Endpoint para servir el archivo de log
-app.get('/download-log', (req, res) => {
+app.get('/download-logs', (req, res) => {
   const logFilePath = path.join(__dirname, 'logs', 'app.log');
   
   // Verificar si el archivo existe
