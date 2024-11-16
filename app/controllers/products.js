@@ -124,7 +124,7 @@ const makeProducts = async (req, res) => {
  Producto.insertMany(arrayBueno);
 
   const params = {
-    QueueUrl: "https://sqs.us-east-2.amazonaws.com/872515257475/ToyoxpressDev.fifo",
+    QueueUrl: "https://sqs.us-east-2.amazonaws.com/872515257475/Toyoxpress.fifo",
     MessageBody: JSON.stringify({arr: arrayChunked[0], index: 0, maximo: length}),
     MessageGroupId: "grupo-1",
     MessageDeduplicationId: `0`, 
@@ -209,7 +209,7 @@ const data = {
   if (arrayChunked.length > body.index + 1 ) {
     console.log("Entre en los params")
     const params = {
-      QueueUrl: "https://sqs.us-east-2.amazonaws.com/872515257475/ToyoxpressDev.fifo",
+      QueueUrl: "https://sqs.us-east-2.amazonaws.com/872515257475/Toyoxpress.fifo",
       MessageBody: JSON.stringify({arr: arrayChunked[body.index+1], index: body.index+1, maximo: body.maximo}),
       MessageGroupId: "grupo-1", 
       MessageDeduplicationId: `${body.index+1}`, 
