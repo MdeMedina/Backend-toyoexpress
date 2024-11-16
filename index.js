@@ -31,6 +31,34 @@ app.get('/events', (req, res) => {
   addClient(res);
 });
 
+// Crear un logger con configuración personalizada
+const logger = winston.createLogger({
+  level: 'info', // Nivel mínimo de logs (puede ser 'error', 'warn', 'info', 'http', 'verbose', 'debug', 'silly')
+  format: winston.format.combine(
+    winston.format.timestamp(), // Agrega marca de tiempo
+    winston.format.json()       // Guarda logs en formato JSON
+  ),
+  transports: [
+    // Transport para guardar logs en un archivo
+    new winston.transports.File({ filename: 'logs/app.log' }),
+
+    // (Opcional) Transport para mostrar los logs en consola
+    new winston.transports.Console({
+      format: winston.format.simple(),
+    }),
+  ],
+});
+
+global.shared.logInfo = (info) => {
+  logger.info(`Mensaje enviado con exito! ${info}`);
+;
+};
+
+global.shared.logError = (error) => {
+  logger.error(`El error es el siguiente: ${error}`);
+;
+};
+
 // Endpoint para servir el archivo de log
 app.get('/download-log', (req, res) => {
   const logFilePath = path.join(__dirname, 'logs', 'app.log');

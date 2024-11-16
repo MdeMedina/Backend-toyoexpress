@@ -3,23 +3,6 @@ const WooCommerceRestApi = require("@woocommerce/woocommerce-rest-api").default;
 const { SQSClient, SendMessageCommand, DeleteMessageCommand } = require("@aws-sdk/client-sqs");
 const winston = require('winston');
 
-// Crear un logger con configuración personalizada
-const logger = winston.createLogger({
-  level: 'info', // Nivel mínimo de logs (puede ser 'error', 'warn', 'info', 'http', 'verbose', 'debug', 'silly')
-  format: winston.format.combine(
-    winston.format.timestamp(), // Agrega marca de tiempo
-    winston.format.json()       // Guarda logs en formato JSON
-  ),
-  transports: [
-    // Transport para guardar logs en un archivo
-    new winston.transports.File({ filename: 'logs/app.log' }),
-
-    // (Opcional) Transport para mostrar los logs en consola
-    new winston.transports.Console({
-      format: winston.format.simple(),
-    }),
-  ],
-});
 
 
 // Inicializa el cliente de WooCommerce
@@ -194,12 +177,12 @@ const data = {
 
   }
   res.status(200).send({ message: "Datos Actualizados con exito!" });
-  logger.info(`Mensaje enviado con exito! ${body.index}`);
+  global.shared.logInfo(body.index)
   global.shared.sendToClients(JSON.stringify({ index: body.index+1, maximo: body.maximo, estado: true}));
 } catch (error) {
 console.log(error);
 global.shared.sendToClients(JSON.stringify({ index: body.index+1, maximo: body.maximo, estado: false}));
-  logger.error(`El error es el siguiente: ${error}`);
+global.shared.logError(error)
 }
 }
 
