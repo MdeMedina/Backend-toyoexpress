@@ -31,16 +31,20 @@ app.get('/events', (req, res) => {
   addClient(res);
 });
 
-const logFilePath = path.join(__dirname, 'backend_logs', 'logs.txt');
-
-// Endpoint para descargar el archivo de logs
-app.get('/download-logs', (req, res) => {
-  res.download(logFilePath, 'logs.txt', (err) => {
-    if (err) {
-      console.error('Error al descargar el archivo:', err);
-      res.status(500).send('Error al descargar el archivo.');
-    }
-  });
+// Endpoint para servir el archivo de log
+app.get('/download-log', (req, res) => {
+  const logFilePath = path.join(__dirname, 'logs', 'app.log');
+  
+  // Verificar si el archivo existe
+  if (fs.existsSync(logFilePath)) {
+    res.download(logFilePath, 'app.log', (err) => {
+      if (err) {
+        res.status(500).send('Error al descargar el archivo.');
+      }
+    });
+  } else {
+    res.status(404).send('El archivo de log no se encuentra.');
+  }
 });
 
 app.use("/excel", require("./app/routes/excel"));
