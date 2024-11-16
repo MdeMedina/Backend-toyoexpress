@@ -62,6 +62,16 @@ global.shared.logError = (error) => {
 ;
 };
 
+// Función para reiniciar el archivo de log
+global.shared.resetLog = () => {
+  const logFile = 'app.log';
+  
+  // Limpia el archivo de log
+  fs.writeFile(logFile, '', (err) => {
+  });
+}
+
+
 // Endpoint para servir el archivo de log
 app.get('/download-logs', (req, res) => {
   const logFilePath = path.join(__dirname, 'logs', 'app.log');

@@ -71,7 +71,7 @@ console.log("Fecha", fecha)
     global.shared.sendFecha("Fecha Cargada")
   } catch (error) {
     console.error("Error al actualizar los datos:", error);
-    res.status(500).send("Error al actualizar los datos");
+    res.status(500).send(`Error al actualizar los datos ${error}`);
   }
 };
 

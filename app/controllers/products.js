@@ -112,6 +112,7 @@ try {
 const { body } = req;
 let crear = [];
 const actualizar = [];
+global.shared.resetLog()
 
 
 // Arrays para almacenar los SKUs de productos que existen y los que no
