@@ -9,6 +9,7 @@ const { addClient } = require('./sseManager');
 const path = require('path');
 const cors = require("cors");
 const PORT = process.env.PORT;
+const winston = require('winston');
 dbConnect();
 
 const app = express();
@@ -48,6 +49,7 @@ const logger = winston.createLogger({
     }),
   ],
 });
+global.shared = {};
 
 global.shared.logInfo = (info) => {
   logger.info(`Mensaje enviado con exito! ${info}`);
@@ -124,7 +126,7 @@ io.on("connection", (socket) => {
 });
 
 
-global.shared = {};
+
 global.shared.sendToClients = (message) => {
   io.to("logs").emit("recibir_logs", message);
   console.log("Mensaje emitido a la sala 'logs':", message);

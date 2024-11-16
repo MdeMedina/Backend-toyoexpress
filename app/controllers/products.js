@@ -1,7 +1,7 @@
 const { Producto } = require("../models/product");
 const WooCommerceRestApi = require("@woocommerce/woocommerce-rest-api").default;
 const { SQSClient, SendMessageCommand, DeleteMessageCommand } = require("@aws-sdk/client-sqs");
-const winston = require('winston');
+
 
 
 
