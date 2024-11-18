@@ -171,7 +171,7 @@ const data = {
 
   }
   res.status(200).send({ message: "Datos Actualizados con exito!" });
-  global.shared.logInfo(creacion)
+  global.shared.logInfo(JSON.stringify(creacion))
   global.shared.sendToClients(JSON.stringify({ index: body.index+1, maximo: body.maximo, estado: true, nombre: body.nombre}));
 } catch (error) {
 console.log(error);
