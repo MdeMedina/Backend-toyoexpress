@@ -81,7 +81,7 @@ const makeProducts = async (req, res) => {
 
   const params = {
     QueueUrl: "https://sqs.us-east-2.amazonaws.com/872515257475/Toyoxpress.fifo",
-    MessageBody: JSON.stringify({arr: arrayChunked[0], index: 0, maximo: length}),
+    MessageBody: JSON.stringify({arr: arrayChunked[0], index: 0, maximo: length, nombre: body.nombre}),
     MessageGroupId: "grupo-1",
     MessageDeduplicationId: `0`, 
   };
@@ -157,7 +157,7 @@ const data = {
   if (arrayChunked.length > body.index + 1 ) {
     const params = {
       QueueUrl: "https://sqs.us-east-2.amazonaws.com/872515257475/Toyoxpress.fifo",
-      MessageBody: JSON.stringify({arr: arrayChunked[body.index+1], index: body.index+1, maximo: body.maximo}),
+      MessageBody: JSON.stringify({arr: arrayChunked[body.index+1], index: body.index+1, maximo: body.maximo, nombre: body.nombre}),
       MessageGroupId: "grupo-1", 
       MessageDeduplicationId: `${body.index+1}`, 
     };
@@ -171,11 +171,11 @@ const data = {
 
   }
   res.status(200).send({ message: "Datos Actualizados con exito!" });
-  global.shared.logInfo(body.index)
-  global.shared.sendToClients(JSON.stringify({ index: body.index+1, maximo: body.maximo, estado: true}));
+  global.shared.logInfo(creacion)
+  global.shared.sendToClients(JSON.stringify({ index: body.index+1, maximo: body.maximo, estado: true, nombre: body.nombre}));
 } catch (error) {
 console.log(error);
-global.shared.sendToClients(JSON.stringify({ index: body.index+1, maximo: body.maximo, estado: false}));
+global.shared.sendToClients(JSON.stringify({ index: body.index+1, maximo: body.maximo, estado: false, nombre: body.nombre}));
 global.shared.logError(error)
 }
 }
