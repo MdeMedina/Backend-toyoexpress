@@ -108,8 +108,8 @@ const makeProducts = async (req, res) => {
 }
 
 const assingProducts = async (req, res) => {
+  const { body } = req;
 try {
-const { body } = req;
 let crear = [];
 const actualizar = [];
 global.shared.resetLog()
@@ -175,8 +175,8 @@ const data = {
   global.shared.logInfo(creacion.update.length)
 } catch (error) {
 console.log(error);
-global.shared.sendToClients(JSON.stringify({ index: body.index+1, maximo: body.maximo, estado: false, nombre: body.nombre}));
 global.shared.logError(error)
+global.shared.sendToClients(JSON.stringify({ index: body.index+1, maximo: body.maximo, estado: false, nombre: body.nombre}));
 }
 }
 
