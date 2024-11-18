@@ -65,12 +65,13 @@ const fechaAct = async (req, res) => {
 
     // Inserta los nuevos documentos en la colección "Fecha"
     const fecha = await Fecha.insertMany(arr);
-
+console.log("Fecha", fecha)
     console.log("Datos actualizados correctamente.");
     res.send({ fecha });
+    global.shared.sendFecha("Fecha Cargada")
   } catch (error) {
     console.error("Error al actualizar los datos:", error);
-    res.status(500).send("Error al actualizar los datos");
+    res.status(500).send(`Error al actualizar los datos ${error}`);
   }
 };
 

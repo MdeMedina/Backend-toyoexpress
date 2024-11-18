@@ -6,8 +6,11 @@ const mongoose = require("mongoose");
 const { dbConnect } = require("./config/mongo");
 const { bodyParser } = require("body-parser");
 const { addClient } = require('./sseManager');
+const path = require('path');
+const fs = require('fs');
 const cors = require("cors");
 const PORT = process.env.PORT;
+const winston = require('winston');
 dbConnect();
 
 const app = express();
@@ -28,6 +31,61 @@ app.use(express.static("app"));
 app.get('/events', (req, res) => {
   console.log("llegue a events index.js")
   addClient(res);
+});
+
+// Crear un logger con configuración personalizada
+const logger = winston.createLogger({
+  level: 'info', // Nivel mínimo de logs (puede ser 'error', 'warn', 'info', 'http', 'verbose', 'debug', 'silly')
+  format: winston.format.combine(
+    winston.format.timestamp(), // Agrega marca de tiempo
+    winston.format.json()       // Guarda logs en formato JSON
+  ),
+  transports: [
+    // Transport para guardar logs en un archivo
+    new winston.transports.File({ filename: 'logs/app.log' }),
+
+    // (Opcional) Transport para mostrar los logs en consola
+    new winston.transports.Console({
+      format: winston.format.simple(),
+    }),
+  ],
+});
+global.shared = {};
+
+global.shared.logInfo = (info) => {
+  logger.info(`Mensaje enviado con exito! ${info}`);
+;
+};
+
+global.shared.logError = (error) => {
+  logger.error(`El error es el siguiente: ${error}`);
+;
+};
+
+// Función para reiniciar el archivo de log
+global.shared.resetLog = () => {
+  const logFile = 'app.log';
+  
+  // Limpia el archivo de log
+  fs.writeFile(logFile, '', (err) => {
+  });
+}
+
+
+// Endpoint para servir el archivo de log
+app.get('/download-logs', (req, res) => {
+  const logFilePath = path.join(__dirname, 'logs', 'app.log');
+  
+  // Verificar si el archivo existe
+  if (fs.existsSync(logFilePath)) {
+    res.download(logFilePath, 'app.log', (err) => {
+      if (err) {
+        res.status(500).send('Error al descargar el archivo.');
+      }
+    });
+  } else {
+    res.status(404).send('El archivo de log no se encuentra.');
+  }
 });
 
 app.use("/excel", require("./app/routes/excel"));
@@ -53,7 +111,7 @@ app.use(express.static("app"));
 
 let io = new Server(server, {
   cors: {
-    origin: "http://front.toyoxpress.com",
+    origin: 'http://front.toyoxpress.com',
     methods: ["GET", "POST", "UPDATE"],
   },
 });
@@ -79,10 +137,15 @@ io.on("connection", (socket) => {
 });
 
 
-global.shared = {};
+
 global.shared.sendToClients = (message) => {
   io.to("logs").emit("recibir_logs", message);
   console.log("Mensaje emitido a la sala 'logs':", message);
+};
+
+global.shared.sendFecha = (message) => {
+  io.to("UF").emit("recibir_fecha", message);
+;
 };
 
 

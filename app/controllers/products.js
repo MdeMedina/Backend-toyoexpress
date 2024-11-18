@@ -1,16 +1,18 @@
 const { Producto } = require("../models/product");
 const WooCommerceRestApi = require("@woocommerce/woocommerce-rest-api").default;
 const { SQSClient, SendMessageCommand, DeleteMessageCommand } = require("@aws-sdk/client-sqs");
-// import WooCommerceRestApi from "@woocommerce/woocommerce-rest-api"; // Supports ESM
 
 
+
+
+// Inicializa el cliente de WooCommerce
 const WooCommerce = new WooCommerceRestApi({
   url: 'https://toyoxpress.com/',
   consumerKey: 'ck_a13ab00a4fb0397be1af94598ff616e5852c8d64',
   consumerSecret: 'cs_e4b8eab412487d87b938bb46d60b966afcf4f4fd',
   version: 'wc/v3',
-  queryStringAuth: true // Force Basic Authentication as query string true and using under HTTPS
-})
+  queryStringAuth: true, // Forzar autenticación básica en la cadena de consulta (HTTPS)
+});
 
 
 const client = new SQSClient({ region: "us-east-2",   credentials: {
@@ -110,6 +112,8 @@ try {
 const { body } = req;
 let crear = [];
 const actualizar = [];
+global.shared.resetLog()
+
 
 // Arrays para almacenar los SKUs de productos que existen y los que no
 const skusExistentes = [];
@@ -132,7 +136,6 @@ crear = await Producto.find({ sku: { $in: skusNoExistentes } });
 // Preparar productos para el array de `actualizar`
 productosExistentes.forEach(product => {
 body.arr.map(pod => {
-  console.log(pod)
   if (pod.sku === product.sku) {
      const productoLimpio = product.toObject(); // Convertimos a objeto simple
     productoLimpio.id = pod.id_producto;    // Añadimos el `id` del producto en `body.arr`
@@ -140,8 +143,6 @@ body.arr.map(pod => {
   }
 })
 });
-console.log("Crear: ", crear)
-console.log("Actualizar: ",actualizar)
 // Preparar el objeto `data` para el batch
 const data = {
   create: crear.map(product => product.toObject()), // Convertimos a objeto simple
@@ -149,15 +150,11 @@ const data = {
 };
 
 // Enviar los datos a WooCommerce
-let creacion = await WooCommerce.post("products/batch", data);
-
+  let creacion = await WooCommerce.post("products/batch", data);
 
   console.log("Mensaje eliminado de SQS");
-  console.log("Estoy a punto de entrar en params")
-  console.log("length de array chunked: ", arrayChunked.length)
-  console.log(arrayChunked.length > body.index + 1 )
+
   if (arrayChunked.length > body.index + 1 ) {
-    console.log("Entre en los params")
     const params = {
       QueueUrl: "https://sqs.us-east-2.amazonaws.com/872515257475/Toyoxpress.fifo",
       MessageBody: JSON.stringify({arr: arrayChunked[body.index+1], index: body.index+1, maximo: body.maximo}),
@@ -167,15 +164,19 @@ let creacion = await WooCommerce.post("products/batch", data);
     const command = new SendMessageCommand(params);
     try {
       const data = await client.send(command);
-      console.log("Mensaje enviado: ", body.index+1)
     } catch (error) {
       console.error("Error al enviar el mensaje:", error);
     }
+  } else {
+
   }
   res.status(200).send({ message: "Datos Actualizados con exito!" });
-  global.shared.sendToClients(JSON.stringify({ index: body.index+1, maximo: body.maximo}));
+  global.shared.logInfo(body.index)
+  global.shared.sendToClients(JSON.stringify({ index: body.index+1, maximo: body.maximo, estado: true}));
 } catch (error) {
 console.log(error);
+global.shared.sendToClients(JSON.stringify({ index: body.index+1, maximo: body.maximo, estado: false}));
+global.shared.logError(error)
 }
 }
 
