@@ -68,5 +68,5 @@ const sendMail = async (filename, correo, nota, corr, nCliente) => {
   //
 };
 
-exports.sendMail = (filename, correo, nota, corr) =>
-  sendMail(filename, correo, nota, corr);
+exports.sendMail = (filename, correo, nota, corr, nCliente) =>
+  sendMail(filename, correo, nota, corr, nCliente);
