@@ -126,6 +126,10 @@ io.on("connection", (socket) => {
     socket.join(data);
   });
 
+  socket.on('keepAlive', () => {
+    console.log(`Keep-alive recibido de: ${socket.id}`);
+  });
+  
   socket.on("send_aprove", (data) => {
     socket.to(data.messageId).emit("receive_aprove", data);
   });
