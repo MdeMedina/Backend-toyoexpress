@@ -57,7 +57,7 @@ const sendOrder = async (cliente, productos, corr) => {
     city: cliente["Ciudad"],
   }
 
-const data = {
+let data = {
   billing,
   shipping,
   line_items: productsData,
@@ -70,9 +70,15 @@ const data = {
     ]
 };
 
+if (cliente["Tipo de Precio"] == "Precio Oferta     "
+|| cliente["Tipo de Precio"] == "Precio Oferta") {
+  data.apply_role = "cliente2"
+}
+
+
+console.log("data: ",data)
 WooCommerce.post("orders", data)
   .then((response) => {
-    console.log(response.data);
   })
   .catch((error) => {
     console.log(error.response.data);
