@@ -13,7 +13,7 @@ router.post("/sendMail", async (req, res) => {
   const nota = mailOptions.nota;
   const corr = mailOptions.corr;
   const nCliente = mailOptions.nCliente;
-  console.log("nCliente route", nCliente)
+
 
   let send = await emailer.sendMail(filename, email, nota, corr, nCliente);
 
