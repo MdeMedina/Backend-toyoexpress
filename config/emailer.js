@@ -25,9 +25,9 @@ function getFileByFilename(filename) {
   }
 }
 
-const sendMail = async (filename, correo, nota, corr) => {
-  console.log(filename);
-  console.log(correo);
+const sendMail = async (filename, correo, nota, corr, nCliente) => {
+  console.log("corr", corr)
+  console.log("nCliente", nCliente)
   let str;
   if (!nota) {
     str = "Envio de pdf adjunto desde Toyoxpress.com";
@@ -39,7 +39,7 @@ const sendMail = async (filename, correo, nota, corr) => {
   const mailOptions = {
     from: "pedidosweb@toyoxpress.com", // Reemplaza con tu dirección de correo electrónico
     to: correo, // Reemplaza con la dirección de correo del destinatario
-    subject: `Pedido n°${corr}`,
+    subject: `Pedido n°${corr} ${nCliente}`,
     text: str,
     attachments: [
       {
@@ -68,5 +68,5 @@ const sendMail = async (filename, correo, nota, corr) => {
   //
 };
 
-exports.sendMail = (filename, correo, nota, corr) =>
-  sendMail(filename, correo, nota, corr);
+exports.sendMail = (filename, correo, nota, corr, nCliente) =>
+  sendMail(filename, correo, nota, corr, nCliente);
