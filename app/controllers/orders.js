@@ -16,13 +16,15 @@ function esCorreoValido(correo) {
 
 
 
-const sendOrder = async (cliente, productos, corr) => {
+const sendOrder = async (cliente, productos, corr, emails) => {
   try {
     console.log(corr)
     const wooProducts = productos.map(async producto => {
       const response = await WooCommerce.get(`products?sku=${producto["Código"]}`); 
       return response
     })
+    let emailAdd = emails.join(",")
+
     const response = await Promise.all(wooProducts)
     const productsData = response.map(respuesta => {
       let data = respuesta.data;
@@ -66,6 +68,9 @@ let data = {
         {
             "key": "_numero_pedido_app",
             "value": corr
+        }, {
+          "key": "_additional_emails",
+          "value": emailAdd
         }
     ]
 };

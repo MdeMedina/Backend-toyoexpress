@@ -26,8 +26,6 @@ function getFileByFilename(filename) {
 }
 
 const sendMail = async (filename, correo, nota, corr, nCliente) => {
-  console.log(filename);
-  console.log(correo);
   let str;
   if (!nota) {
     str = "Envio de pdf adjunto desde Toyoxpress.com";
