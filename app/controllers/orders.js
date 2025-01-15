@@ -46,7 +46,7 @@ const sendOrder = async (cliente, productos, corr, emails) => {
 
      let billing = {
     first_name: cliente.Nombre,
-    email: esCorreoValido(cliente["Correo Electronico"]) ? cliente["Correo Electronico"] : "mamedina770@gmail.com",
+    email: esCorreoValido(cliente["Correo Electronico"]) ? cliente["Correo Electronico"] : "ventas.toyoplanet@gmail.com",
     phone: cliente["Telefonos"],
     address_1: cliente["Direccion"],
     state: cliente["Estado"],
