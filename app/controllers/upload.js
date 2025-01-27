@@ -13,7 +13,7 @@ const storage = multer.diskStorage({
 const upload = multer({ storage: storage });
 
 function getFileByFilename(filename) {
-const filePath = path.join("/tmp", "uploads", filename);
+const filePath = path.join("uploads", filename);
   try {
     const file = fs.readFileSync(filePath);
     return file;
@@ -23,7 +23,7 @@ const filePath = path.join("/tmp", "uploads", filename);
 }
 
 exports.getFileByFilename = (filename) => {
-const filePath = path.join("/tmp", "uploads", filename);
+const filePath = path.join("uploads", filename);
   try {
     const file = fs.readFileSync(filePath);
     return file;
