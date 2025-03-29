@@ -23,7 +23,8 @@ const ExcelClientes = mongoose.model("Clientes", {
   "Ciudad": {type: String},
   "Municipio": {type: String},
   "Direccion": {type: String},
-  "Vendedores Código":{type: String}
+  "Vendedores Código":{type: String},
+  "Ultima Venta a Credito":{type: String}
 });
 
 module.exports = { ExcelProductos, ExcelClientes };
