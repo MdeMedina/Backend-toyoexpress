@@ -8,7 +8,7 @@ const createTrans = () => {
     port: 465,
     auth: {
       user: "pedidosweb@toyoxpress.com",
-      pass: "Toyoxpress.123",
+      pass: "]Zb3v>6lq:S4",
     },
   });
   return transport;
@@ -39,6 +39,14 @@ const sendMail = async (filename, correo, nota, corr, nCliente) => {
     to: correo, // Reemplaza con la dirección de correo del destinatario
     subject: `Pedido n°${corr} ${nCliente}`,
     text: str,
+    headers: {
+      "X-Mailer": "Toyoxpress Mailer v1.0",
+      "X-Priority": "3",
+      "X-MSMail-Priority": "Normal",
+      "Importance": "Normal",
+      "Return-Path": "pedidosweb@toyoxpress.com",
+      "Reply-To": "pedidosweb@toyoxpress.com",
+    },
     attachments: [
       {
         filename: filename, // Nombre del archivo adjunto que se mostrará en el correo
