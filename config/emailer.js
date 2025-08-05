@@ -26,7 +26,7 @@ function getFileByFilename(filename) {
   }
 }
 
-const sendMail = async (filename, correo, nota, corr, nCliente) => {
+const sendMail = async (pdfBuffer, correo, nota, corr, nCliente) => {
   const html = `
     <p style="text-align: center;">
       <img src="cid:logoPrincipal" alt="Toyoxpress" style="max-width: 300px; height: auto; margin-bottom: 20px;" />
@@ -39,7 +39,7 @@ const sendMail = async (filename, correo, nota, corr, nCliente) => {
   `;
 
   const transporter = createTrans();
-  const pdfContent = getFileByFilename(filename);
+
 
   const mailOptions = {
     from: "pedidosweb@toyoxpress.com", // Debe ser el mismo correo verificado en Brevo
@@ -57,8 +57,8 @@ const sendMail = async (filename, correo, nota, corr, nCliente) => {
     },
     attachments: [
       {
-        filename: filename,
-        content: pdfContent,
+        filename: `Pedido_${corr}.pdf`,
+        content: pdfBuffer,
       },
       {
         filename: "logo.png",
@@ -78,5 +78,5 @@ const sendMail = async (filename, correo, nota, corr, nCliente) => {
   });
 };
 
-exports.sendMail = (filename, correo, nota, corr, nCliente) =>
-  sendMail(filename, correo, nota, corr, nCliente);
+exports.sendMail = (pdfBuffer, correo, nota, corr, nCliente) =>
+  sendMail(pdfBuffer, correo, nota, corr, nCliente);
