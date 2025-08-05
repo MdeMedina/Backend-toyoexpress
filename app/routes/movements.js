@@ -8,6 +8,7 @@ const {
   modificarMovimiento,
   generarPDFData,
 } = require("../controllers/movements");
+const isAuthenticated = require("../middleware/isAuth");
 
 
 
@@ -46,10 +47,10 @@ function applyRegExpCondition(condition) {
     return newCond
 }
 
-router.post("/movimiento", crearMovimiento);
-router.put("/updateStatus", modificarStatus);
-router.put("/updateMove", modificarMovimiento);
-router.post("/PDF", async (req, res) => {
+router.post("/movimiento", isAuthenticated ,crearMovimiento);
+router.put("/updateStatus", isAuthenticated ,modificarStatus);
+router.put("/updateMove", isAuthenticated,modificarMovimiento);
+router.post("/PDF", isAuthenticated ,async (req, res) => {
       try {
       const {condition, fechas} = req.body;
       let conditionOld = applyRegExpConditionSaldo(condition)
@@ -60,7 +61,7 @@ router.post("/PDF", async (req, res) => {
       return res.json({ errorMessage: error.message });
     }
 });
-router.post("/", async (req, res) => {
+router.post("/", isAuthenticated ,async (req, res) => {
       try {
       const {condition, pagina, cantidad, fechas, sort, vm, nm} = req.body;
       let conditionOld = applyRegExpConditionSaldo(condition)
@@ -73,6 +74,6 @@ router.post("/", async (req, res) => {
       return res.json({ errorMessage: error.message });
     }
 });
-router.put("/deleteMoves", deleteMoves);
+router.put("/deleteMoves", isAuthenticated,deleteMoves);
 
 module.exports = router;

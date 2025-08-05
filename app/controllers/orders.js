@@ -11,12 +11,12 @@ const WooCommerce = new WooCommerceRestApi({
 
 function esCorreoValido(correos) {
   const expresionRegular = /^[a-zA-Z0-9._-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
-  
-  // Separar por espacios, punto y coma, o comas
-  const separados = correos.split(/[\s;,]+/).filter(Boolean);
-  
-  // Verifica que todos los elementos sean correos válidos
-  return separados.every(correo => expresionRegular.test(correo));
+
+  console.log(correos)
+  // Elimina espacios iniciales/finales y separa por espacio, coma o punto y coma
+  const separados = correos.trim().split(/[\s;,]+/).filter(Boolean);
+console.log(separados)
+  return separados.every(correo => expresionRegular.test(correo.trim()));
 }
 
 function extraerCorreosValidos(correos) {
@@ -62,7 +62,7 @@ const sendOrder = async (cliente, productos, corr, emails) => {
       }
       })
 
-
+      console.log(cliente["Correo Electronico"],esCorreoValido(cliente["Correo Electronico"]), extraerCorreosValidos(cliente["Correo Electronico"]))
      let billing = {
     first_name: cliente.Nombre,
     email: esCorreoValido(cliente["Correo Electronico"]) ? extraerCorreosValidos(cliente["Correo Electronico"])[0] : "",
@@ -107,6 +107,8 @@ WooCommerce.post("orders", data)
   .catch((error) => {
     console.log(error.response.data);
   })
+
+  return true;
     
   } catch (error) {
     console.error(error)

@@ -78,13 +78,14 @@ const makeProducts = async (req, res) => {
     }
   });
  Producto.insertMany(arrayBueno);
-
+console.log("Productos insertados correctamente en la base de datos.");
   const params = {
     QueueUrl: "https://sqs.us-east-2.amazonaws.com/872515257475/Toyoxpress.fifo",
     MessageBody: JSON.stringify({arr: arrayChunked[0], index: 0, maximo: length, nombre: body.nombre}),
     MessageGroupId: "grupo-1",
     MessageDeduplicationId: `0`, 
   };
+  console.log(params)
   const command = new SendMessageCommand(params);
   try {
     const data = await client.send(command);

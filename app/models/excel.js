@@ -6,7 +6,7 @@ const ExcelProductos = mongoose.model("Excel", {
   Referencia: { type: String },
   Marca: { type: String },
   Modelo: { type: String },
-  "Existencia Actual": { type: String },
+  "Existencia Actual": { type: Number},
   "Precio Oferta": { type: Number },
   "Precio Mayor": { type: Number },
   "Precio Minimo": { type: Number },
