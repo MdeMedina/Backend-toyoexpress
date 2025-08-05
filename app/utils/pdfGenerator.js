@@ -4,7 +4,7 @@ const MyDocument = require("./documento"); // CommonJS o export default, depende
 async function generarPDF(datosCliente, datos, total, items, nota, correlativo, hora, User) {
   // ✅ Import dinámico del módulo ESM
   const { renderToStream } = await import('@react-pdf/renderer');
-
+  const reactPdf = await import('@react-pdf/renderer');
   const pdfStream = await renderToStream(
     React.createElement(MyDocument, {
       datosCliente,
@@ -15,6 +15,7 @@ async function generarPDF(datosCliente, datos, total, items, nota, correlativo, 
       correlativo,
       hora,
       User,
+      reactPdf
     })
   );
 
