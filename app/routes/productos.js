@@ -8,7 +8,7 @@ const isAuthenticated = require("../middleware/isAuth");
 
 
 router.post("/", isAuthenticated,makeProducts)
-router.post("/assing", isAuthenticated,assingProducts)
+router.post("/assing" ,assingProducts)
 //comentario
 
 module.exports = router;
