@@ -9,22 +9,17 @@ const Reserva = require('../models/reserva');
 const { cancelarReserva } = require('./reserva');
 
 async function procesarCola() {
-  console.log('Procesando cola de pedidos...');
   const pedido = await Pedido.findOneAndUpdate(
     { estado: "pendiente" },
     { estado: "procesando" },
     { sort: { creadoEn: 1 }, new: true }
   );
 
-  console.log("pedido", pedido);
-
   if (!pedido) {
-    console.log('No hay pedidos pendientes en la cola.');
     return;
   }
 
   try {
-    console.log('Entre aqui en el try:');
     const correlativo = await getNextCorrelativo();
 
     console.log('Procesando pedido:', pedido._id);
@@ -69,4 +64,4 @@ async function procesarCola() {
   }
 }
 
-setInterval(procesarCola, 20000);
+setInterval(procesarCola, 3000);

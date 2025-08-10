@@ -1,5 +1,4 @@
 
-const { set } = require('mongoose');
 const Pedido = require('../models/pedido');
 const { procesarCola } = require('./worker');
 
@@ -10,7 +9,7 @@ async function encolarPedido(payload, utils) {
         payload
       }
   const pedido = await Pedido.create(doc);
-  console.log('Pedido encolado:', pedido._id, pedido.estado);
+  console.log('Pedido encolado:', pedido._id);
   return pedido._id;
 }
 

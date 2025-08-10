@@ -63,7 +63,6 @@ const sendOrder = async (cliente, productos, corr, emails) => {
       })
 
       console.log(cliente["Correo Electronico"],esCorreoValido(cliente["Correo Electronico"]), extraerCorreosValidos(cliente["Correo Electronico"]))
-      console.log("Email Add: ", emailAdd)
      let billing = {
     first_name: cliente.Nombre,
     email: esCorreoValido(cliente["Correo Electronico"]) ? extraerCorreosValidos(cliente["Correo Electronico"])[0] : esCorreoValido(extraerCorreosValidos(emailAdd)[0]) ? extraerCorreosValidos(emailAdd)[0] : "",
