@@ -2,7 +2,7 @@ const Reserva = require('../models/reserva');
 
 async function reservarStock(codigoProducto, cantidad, idUsuario) {
     let reservadaHasta = new Date();
-    reservadaHasta.setMinutes(reservadaHasta.getMinutes() + 5);
+    reservadaHasta.setMinutes(reservadaHasta.getMinutes() + 2);
     await Reserva.create({
       codigoProducto,
       cantidad,
