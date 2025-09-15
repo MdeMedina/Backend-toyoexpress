@@ -18,7 +18,7 @@ async function procesarPedido({ pedidoId, payload }) {
   let workingPayload = payload;
 
   if (!workingPayload) {
-    throw new Error('Payload vacío: se requiere `payload` o `pedidoId` válido');
+    throw new Error(`Payload vacío: se requiere 'payload' o 'pedidoId' válido ${pedidoId} ${payload}`);
   }
 
   try {
