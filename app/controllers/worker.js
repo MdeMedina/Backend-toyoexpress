@@ -17,8 +17,22 @@ async function procesarPedido({ pedidoId, payload }) {
   let pedidoDoc = null;
   let workingPayload = payload;
 
+  // Modo 1: buscar/lockear pedido en BD si mandan el id
+  if (pedidoId) {
+    pedidoDoc = await Pedido.findOneAndUpdate(
+      { _id: pedidoId, estado: { $in: ['pendiente', 'procesando'] } },
+      { estado: 'procesando' },
+      { new: true }
+    );
+    if (!pedidoDoc) {
+      console.warn('[WORKER] pedido no encontrado o ya procesado:', pedidoId);
+      return;
+    }
+    workingPayload = pedidoDoc.payload;
+  }
+
   if (!workingPayload) {
-    throw new Error(`Payload vacío: se requiere 'payload' o 'pedidoId' válido ${pedidoId} ${payload}`);
+    throw new Error('Payload vacío: se requiere `payload` o `pedidoId` válido');
   }
 
   try {
@@ -83,10 +97,22 @@ async function procesarPedido({ pedidoId, payload }) {
       })
     );
 
+    // 4) persistencia final si el pedido existe en BD
+    if (pedidoDoc) {
+      pedidoDoc.estado = 'completado';
+      pedidoDoc.correlativo = correlativo;
+      pedidoDoc.procesadoEn = new Date();
+      await pedidoDoc.save();
+    }
 
     console.log('✅ Pedido completado');
     return { ok: true, correlativo };
   } catch (err) {
+    if (pedidoDoc) {
+      pedidoDoc.estado = 'error';
+      pedidoDoc.error = err.message;
+      await pedidoDoc.save();
+    }
     console.error('❌ Error procesando pedido:', err);
     throw err;
   }
