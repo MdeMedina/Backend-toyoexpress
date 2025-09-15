@@ -20,7 +20,7 @@ async function procesarPedido({ pedidoId, payload }) {
   // Modo 1: buscar/lockear pedido en BD si mandan el id
   if (pedidoId) {
     let pedidoDocRev = await Pedido.findOne({_id: pedidoId});
-    console.log(`Procesando pedidoId=${pedidoId}, estado actual:`, pedidoDocRev?.estado);
+    console.log(`Procesando pedidoId=${pedidoId}, estado actual:`, pedidoDocRev);
     pedidoDoc = await Pedido.findOneAndUpdate(
       { _id: pedidoId, estado: { $in: ['pendiente', 'procesando'] } },
       { estado: 'procesando' },
