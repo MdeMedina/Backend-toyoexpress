@@ -37,7 +37,7 @@ async function encolarPedido(payload) {
     const out = await sqs.send(new SendMessageCommand(params));
     await Pedido.updateOne(
       { _id: pedido._id },
-      { estado: 'enviado', sqsMessageId: out.MessageId }
+      { estado: 'pendiente', sqsMessageId: out.MessageId }
     );
 
     console.log('Pedido encolado:', pedido._id, 'msgId:', out.MessageId);
