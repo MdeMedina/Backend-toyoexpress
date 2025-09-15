@@ -1,8 +1,9 @@
 const express = require("express");
 const router = express.Router();
 const { sendOrder } = require("../controllers/orders");
+const isAuthenticated = require("../middleware/isAuth");
 
-router.post("/", async (req, res) => {
+router.post("/", isAuthenticated ,async (req, res) => {
   const { body } = req;
   const { dataClient } = body;
 

@@ -194,7 +194,9 @@ const actPass = async (req, res) => {
 
 const deleteUsers = async (req, res) => {
   const { body } = req;
+  console.log(body);
   const del = await User.findOneAndDelete({ _id: body._id });
+  console.log(del); 
   const users = await User.find();
   res.status(200).send(users);
 };

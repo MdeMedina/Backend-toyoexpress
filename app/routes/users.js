@@ -17,17 +17,17 @@ const {
 const { checkearHorario } = require("../middleware/checkTime");
 const isAuthenticated = require("../middleware/isAuth");
 
-router.post("/register", registerUser);
-router.put("/updateUser", actUser);
-router.put("/actualizarCantidad", actNumber);
-router.put("/actNotificaciones", actNotificaciones);
-router.delete("/deleteUser", deleteUsers);
+router.post("/register", isAuthenticated,registerUser);
+router.put("/updateUser", isAuthenticated,actUser);
+router.put("/actualizarCantidad", isAuthenticated,actNumber);
+router.put("/actNotificaciones", isAuthenticated,actNotificaciones);
+router.delete("/deleteUser", isAuthenticated ,deleteUsers);
 router.post("/login", loginUser);
 router.get("/auth", isAuthenticated, authUser);
 router.get("/hour", getHour);
-router.get("/", getUsers);
-router.put("/actInactive", actInactive);
-router.post("/inactive", getInactive);
-router.post("/actpass", actPass);
+router.get("/", isAuthenticated,getUsers);
+router.put("/actInactive", isAuthenticated,actInactive);
+router.post("/inactive", isAuthenticated,getInactive);
+router.post("/actpass", isAuthenticated ,actPass);
 
 module.exports = router;

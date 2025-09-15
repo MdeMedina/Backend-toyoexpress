@@ -9,11 +9,27 @@ const WooCommerce = new WooCommerceRestApi({
   queryStringAuth: true // Force Basic Authentication as query string true and using under HTTPS
 })
 
-function esCorreoValido(correo) {
+function esCorreoValido(correos) {
   const expresionRegular = /^[a-zA-Z0-9._-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
-  return expresionRegular.test(correo);
+
+  console.log(correos)
+  // Elimina espacios iniciales/finales y separa por espacio, coma o punto y coma
+  const separados = correos.trim().split(/[\s;,]+/).filter(Boolean);
+console.log(separados)
+  return separados.every(correo => expresionRegular.test(correo.trim()));
 }
 
+function extraerCorreosValidos(correos) {
+  const expresionRegular = /^[a-zA-Z0-9._-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
+
+  // Separar por espacios, punto y coma, o comas
+  const posiblesCorreos = correos.split(/[\s;,]+/).filter(Boolean);
+  
+  // Filtrar solo los correos válidos
+  const correosValidos = posiblesCorreos.filter(correo => expresionRegular.test(correo));
+  
+  return correosValidos;
+}
 
 
 const sendOrder = async (cliente, productos, corr, emails) => {
@@ -23,6 +39,9 @@ const sendOrder = async (cliente, productos, corr, emails) => {
       const response = await WooCommerce.get(`products?sku=${producto["Código"]}`); 
       return response
     })
+
+    let correosADD = extraerCorreosValidos(cliente["Correo Electronico"]).slice(1)
+    emails = emails.concat(correosADD)
     let emailAdd = emails.join(",")
 
     const response = await Promise.all(wooProducts)
@@ -43,10 +62,10 @@ const sendOrder = async (cliente, productos, corr, emails) => {
       }
       })
 
-
+      console.log(cliente["Correo Electronico"],esCorreoValido(cliente["Correo Electronico"]), extraerCorreosValidos(cliente["Correo Electronico"]))
      let billing = {
     first_name: cliente.Nombre,
-    email: esCorreoValido(cliente["Correo Electronico"]) ? cliente["Correo Electronico"] : "mamedina770@gmail.com",
+    email: esCorreoValido(cliente["Correo Electronico"]) ? extraerCorreosValidos(cliente["Correo Electronico"])[0] : esCorreoValido(extraerCorreosValidos(emailAdd)[0]) ? extraerCorreosValidos(emailAdd)[0] : "",
     phone: cliente["Telefonos"],
     address_1: cliente["Direccion"],
     state: cliente["Estado"],
@@ -88,6 +107,8 @@ WooCommerce.post("orders", data)
   .catch((error) => {
     console.log(error.response.data);
   })
+
+  return true;
     
   } catch (error) {
     console.error(error)

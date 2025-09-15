@@ -4,9 +4,11 @@ const {
   assingProducts
 } = require("../controllers/products");
 const router = express.Router();
+const isAuthenticated = require("../middleware/isAuth");
 
-router.post("/", makeProducts)
-router.post("/assing", assingProducts)
+
+router.post("/", isAuthenticated,makeProducts)
+router.post("/assing" ,assingProducts)
 //comentario
 
 module.exports = router;

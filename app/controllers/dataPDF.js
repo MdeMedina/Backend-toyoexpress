@@ -1,31 +1,62 @@
 const dataPDF = require("../models/dataPDF");
 
-const crearPDF = async (req, res) => {
-  let data = await dataPDF.findOne({}, null, { sort: { cor: -1 } });
-  
+
+const crearPDF = async (cliente, vendedor,  products, correlativo, total) => {
   try {
-    let pdf = await dataPDF.findOneAndUpdate(
-    { _id: data._id }, // Filtro: Busca el documento por su ID
-    { $set: { cor: data.cor+1 } }, // Actualización: Establece el campo `status` a "procesado"
-      { new: true, upsert: false } // Opciones: devuelve el documento actualizado, no crea uno nuevo si no lo encuentra
-      );
+    let pdf = await dataPDF.create({
+      cor: correlativo,
+      cliente: cliente.Nombre,
+      vendedor,
+      fecha: Date.now(),
+      productos: products,
+      total
+    });
 
-console.log(pdf);
-
-    res.status(201).send(pdf);
+    console.log("datPDF creado", pdf);
   } catch (e) {
-    httpError(res, e);
+   console.log("Error al crear el PDF", e);
   }
 };
+
+
 
 const getPDF = async (req, res) => {
-let pdf = await dataPDF.findOne({}, null, { sort: { cor: -1 } });
-console.log("Nuevo pdf: ", pdf)
-  if (!pdf) {
-    res.status(404).send("porfavor cree algunas cuentas!");
-  } else {
-    res.status(200).send(pdf);
+  const { body } = req;
+  console.log(body)
+  const skip = (body.page - 1) * 10;
+  let totalPDF = 0;
+  let PDFS = [];
+  let data = await dataPDF.findOne({}, null, { sort: { cor: -1 } });
+  data.cor = data.cor + 1;
+  if (body.registro) {
+    const query = {};
+
+if (body.cor) {
+  query.cor = body.cor;
+}
+
+if (body.cliente) {
+  query.cliente = { $regex: body.cliente, $options: 'i' };
+}
+
+if (body.vendedor) {
+  query.vendedor = { $regex: body.vendedor, $options: 'i' };
+}
+
+
+    totalPDF = await dataPDF.countDocuments(query);
+      
+      PDFS = await dataPDF.find(query).limit(10).sort({ cor: -1 }).skip(skip);  
   }
-};
+
+
+
+if (!PDFS[0] && !data) {
+  res.status(404).send("No existen pdf!");
+} else if (PDFS[0]) {
+  res.status(200).send({PDFS, total: totalPDF});
+} else {
+  res.status(200).send({data});
+}};
 
 module.exports = { getPDF, crearPDF };

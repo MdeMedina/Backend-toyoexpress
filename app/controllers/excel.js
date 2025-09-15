@@ -40,19 +40,22 @@ const updateExcelProductos = async (req, res) => {
   }
 };
 
-const updateStock = async (req, res) => {
-  const { body } = req;
-  let eq = await ExcelProductos.findOne({ Código: body.codigo });
-  console.log(eq["Existencia Actual"], body.stock);
-  let stock = eq["Existencia Actual"] - body.stock;
+const updateStock = async (code, cantidad) => {
+  let eq = await ExcelProductos.findOne({ Código: code });
+  console.log(eq["Existencia Actual"], cantidad);
+  let stock =typeof eq["Existencia Actual"] == "string" ? parseInt(eq["Existencia Actual"]) - cantidad : eq["Existencia Actual"] - cantidad;
 
   await ExcelProductos.findOneAndUpdate(
-    { Código: body.codigo },
-    { "Existencia Actual": stock },
+    { Código: code },
+    { "Existencia Actual": stock},
     { new: true }
-  ).then((updateProduct) => {
-    res.status(200).send({ message: "Excel Actualizado con éxito!" });
-  });
+  )
+    .then((result) => {
+      console.log("Stock actualizado:", result);
+    })
+    .catch((error) => {
+      console.error("Error al actualizar el stock:", error);
+    });
 };
 
 const fechaAct = async (req, res) => {
@@ -84,15 +87,27 @@ let fechas = await Fecha.find({})
 };4
 
 const getExcelClientes = async (condition, page) => {
-let codigo = condition ? { Nombre: new RegExp(condition.Nombre, "i")} : {};
-  let excel = await ExcelClientes.find(codigo)  
-      .sort({ _id: -1 })
-      .skip(page)
-      .limit(parseInt(process.env.PAGINA))
-      .lean()
-      .exec();
-    const total = await ExcelClientes.countDocuments(condition);
-  return { total, excel, };
+  let codigo = condition ? { Nombre: new RegExp(condition.Nombre, "i") } : {};
+
+  const start = Date.now();
+
+  console.time("mongo:find(ExcelClientes)");
+  let excel = await ExcelClientes.find(codigo)
+    .sort({ _id: -1 })
+    .skip(page)
+    .limit(parseInt(process.env.PAGINA))
+    .lean()
+    .exec();
+  console.timeEnd("mongo:find(ExcelClientes)");
+
+  console.time("mongo:count(ExcelClientes)");
+  const total = await ExcelClientes.countDocuments(condition);
+  console.timeEnd("mongo:count(ExcelClientes)");
+
+  const end = Date.now();
+  console.log(`⏱️ Query ExcelClientes TOTAL: ${end - start} ms`);
+
+  return { total, excel };
 };
 
 const updateExcelClientes = async (req, res) => {
@@ -117,16 +132,31 @@ const updateExcelClientes = async (req, res) => {
   }
 };
 
-const getExcelProductos = async (condition, page) => {
-let codigo = condition ? { Código: new RegExp(condition.Código, "i")} : {};
-  let excel = await ExcelProductos.find(codigo)  
+const escapeRegex = (s) => {
+  if (!s) return "";          // null, undefined, vacío
+  return String(s).replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+};
+
+
+const getExcelProductos = async (codigoSearch, offset, limit) => {
+  const filter = codigoSearch
+    ? { Código: { $regex: `^${escapeRegex(codigoSearch["Código"])}`, $options: "i" } }
+    : {};
+
+    console.log(codigoSearch, offset, limit, filter)
+
+
+  const [excel, total] = await Promise.all([
+    ExcelProductos.find(filter)
       .sort({ _id: -1 })
-      .skip(page)
-      .limit(parseInt(process.env.PAGINA))
+      .skip(offset)
+      .limit(limit)
       .lean()
-      .exec();
-    const total = await ExcelProductos.countDocuments(condition);
-  return { total, excel, };
+      .exec(),
+    ExcelProductos.countDocuments(filter),
+  ]);
+
+  return { total, excel };
 };
 
 const getCompleteExcelProductos = async (req, res) => {

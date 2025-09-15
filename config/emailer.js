@@ -4,11 +4,12 @@ const fs = require("fs");
 
 const createTrans = () => {
   const transport = nodemailer.createTransport({
-    host: "smtp.hostinger.com",
-    port: 465,
+    host: "smtp-relay.brevo.com",
+    port: 587,
+    secure: false, // Brevo usa STARTTLS en 587
     auth: {
-      user: "pedidosweb@toyoxpress.com",
-      pass: "Toyoxpress.123",
+      user: process.env.BREVO_SMTP_USER, // Usa el correo que tengas verificado en Brevo
+      pass: process.env.BREVO_SMTP_PASS, // Es la clave SMTP que te da Brevo (no la API key completa)
     },
   });
   return transport;
@@ -25,46 +26,57 @@ function getFileByFilename(filename) {
   }
 }
 
-const sendMail = async (filename, correo, nota, corr, nCliente) => {
-  let str;
-  if (!nota) {
-    str = "Envio de pdf adjunto desde Toyoxpress.com";
-  } else {
-    str = nota;
-  }
+const sendMail = async (pdfBuffer, correo, nota, corr, nCliente) => {
+  const html = `
+    <p style="text-align: center;">
+      <img src="cid:logoPrincipal" alt="Toyoxpress" style="max-width: 300px; height: auto; margin-bottom: 20px;" />
+    </p>
+    <p>Hola,</p>
+    <p>Comprobante de pedido en <strong>Toyoxpress.com</strong>. Adjuntamos en este correo el archivo PDF con el comprobante de tu pedido.</p>
+    ${nota ? `<p><strong>Nota:</strong> ${nota}</p>` : ""}
+    <p>Si tienes alguna duda, puedes responder a este correo o escribirnos a <a href="mailto:contacto@toyoxpress.com">contacto@toyoxpress.com</a>.</p>
+    <p>Saludos cordiales,<br>Equipo Toyoxpress</p>
+  `;
+
   const transporter = createTrans();
-  let pdfContent = getFileByFilename(filename);
+
+
   const mailOptions = {
-    from: "pedidosweb@toyoxpress.com", // Reemplaza con tu dirección de correo electrónico
-    to: correo, // Reemplaza con la dirección de correo del destinatario
+    from: "pedidosweb@toyoxpress.com", // Debe ser el mismo correo verificado en Brevo
+    to: correo,
     subject: `Pedido n°${corr} ${nCliente}`,
-    text: str,
+    text: nota || "Envio de pdf adjunto desde Toyoxpress.com",
+    html: html,
+    headers: {
+      "X-Mailer": "Toyoxpress Mailer v1.0",
+      "X-Priority": "3",
+      "X-MSMail-Priority": "Normal",
+      "Importance": "Normal",
+      "Return-Path": "pedidosweb@toyoxpress.com",
+      "Reply-To": "pedidosweb@toyoxpress.com",
+    },
     attachments: [
       {
-        filename: filename, // Nombre del archivo adjunto que se mostrará en el correo
-        content: pdfContent, // Contenido del PDF que se enviará
+        filename: `Pedido_${corr}.pdf`,
+        content: pdfBuffer,
+      },
+      {
+        filename: "logo.png",
+        path: path.join(__dirname, "../app/img/logo.png"), // ruta a la imagen
+        cid: "logoPrincipal", // se referencia en el HTML
       },
     ],
   };
+
   // Envía el correo electrónico
   transporter.sendMail(mailOptions, (error, info) => {
     if (error) {
-      let def = { str: "Error al enviar el correo:", info: error };
-      return def;
+      console.error("Error al enviar el correo:", error);
     } else {
-      let def = { str: "Correo electrónico enviado:", info: info.response };
-      return def;
+      console.log("Correo electrónico enviado:", info.response);
     }
   });
-
-  // Message sent: <b658f8ca-6296-ccf4-8306-87d57a0b4321@example.com>
-
-  //
-  // NOTE: You can go to https://forwardemail.net/my-account/emails to see your email delivery status and preview
-  //       Or you can use the "preview-email" npm package to preview emails locally in browsers and iOS Simulator
-  //       <https://github.com/forwardemail/preview-email>
-  //
 };
 
-exports.sendMail = (filename, correo, nota, corr, nCliente) =>
-  sendMail(filename, correo, nota, corr, nCliente);
+exports.sendMail = (pdfBuffer, correo, nota, corr, nCliente) =>
+  sendMail(pdfBuffer, correo, nota, corr, nCliente);
