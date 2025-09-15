@@ -87,18 +87,26 @@ let fechas = await Fecha.find({})
 };4
 
 const getExcelClientes = async (condition, page) => {
+  let codigo = condition ? { Nombre: new RegExp(condition.Nombre, "i") } : {};
 
-let codigo = condition ? { Nombre: new RegExp(condition.Nombre, "i")} : {};
   const start = Date.now();
-  let excel = await ExcelClientes.find(codigo)  
-      .sort({ _id: -1 })
-      .skip(page)
-      .limit(parseInt(process.env.PAGINA))
-      .lean()
-      .exec();
-    const total = await ExcelClientes.countDocuments(condition);
-     const end = Date.now();
-      console.log(`⏱️ Query ExcelClientes tardó: ${end - start} ms`);
+
+  console.time("mongo:find(ExcelClientes)");
+  let excel = await ExcelClientes.find(codigo)
+    .sort({ _id: -1 })
+    .skip(page)
+    .limit(parseInt(process.env.PAGINA))
+    .lean()
+    .exec();
+  console.timeEnd("mongo:find(ExcelClientes)");
+
+  console.time("mongo:count(ExcelClientes)");
+  const total = await ExcelClientes.countDocuments(condition);
+  console.timeEnd("mongo:count(ExcelClientes)");
+
+  const end = Date.now();
+  console.log(`⏱️ Query ExcelClientes TOTAL: ${end - start} ms`);
+
   return { total, excel };
 };
 
