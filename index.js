@@ -145,10 +145,10 @@ io.on("connection", (socket) => {
     socket.join(data);
   });
 
-  socket.on('keepAlive', () => {
+    socket.on('keepAlive', () => {
     console.log(`Keep-alive recibido de: ${socket.id}`);
   });
-  
+
   socket.on("send_aprove", (data) => {
     socket.to(data.messageId).emit("receive_aprove", data);
   });
@@ -172,7 +172,7 @@ global.shared.sendFecha = (message) => {
 };
 
 
-server.listen(PORT, () => {
+server.listen(PORT, '0.0.0.0', () => {
   console.log("listening in port " + PORT);
 });
 
