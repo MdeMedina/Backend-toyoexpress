@@ -1,3 +1,4 @@
+// app/controllers/worker.js
 const { sendOrder } = require('./orders');
 const generarPDF = require('../utils/pdfGenerator');
 const emailer = require('../../config/emailer');
@@ -5,83 +6,116 @@ const { updateStock } = require('./excel');
 const { crearPDF } = require('./dataPDF');
 const Pedido = require('../models/pedido');
 const getNextCorrelativo = require('../utils/getNextCorrelativo');
-const Reserva = require('../models/reserva');
 const { cancelarReserva } = require('./reserva');
 
-async function procesarCola() {
-  const pedido = await Pedido.findOneAndUpdate(
-    { estado: "pendiente" },
-    { estado: "procesando" },
-    { sort: { creadoEn: 1 }, new: true }
-  );
+/**
+ * Procesa un pedido. Puede venir el payload completo o un pedidoId.
+ * - Si llega pedidoId: carga/actualiza el documento en Mongo
+ * - Si llega payload directo: procesa "stateless" (sin depender de Mongo)
+ */
+async function procesarPedido({ pedidoId, payload }) {
+  let pedidoDoc = null;
+  let workingPayload = payload;
 
-  if (!pedido) {
-    return;
+  // Modo 1: buscar/lockear pedido en BD si mandan el id
+  if (pedidoId) {
+    pedidoDoc = await Pedido.findOneAndUpdate(
+      { _id: pedidoId, estado: { $in: ['pendiente', 'procesando'] } },
+      { estado: 'procesando' },
+      { new: true }
+    );
+    if (!pedidoDoc) {
+      console.warn('[WORKER] pedido no encontrado o ya procesado:', pedidoId);
+      return;
+    }
+    workingPayload = pedidoDoc.payload;
+  }
+
+  if (!workingPayload) {
+    throw new Error('Payload vacío: se requiere `payload` o `pedidoId` válido');
   }
 
   try {
     const correlativo = await getNextCorrelativo();
+    console.log('Procesando pedido:', pedidoId || '(inline)', 'Correlativo:', correlativo);
 
-    console.log('Procesando pedido:', pedido._id);
-    console.log('Correlativo:', correlativo);
-
-    await crearPDF(pedido.payload.cliente, pedido.payload.vendedor, pedido.payload.productos, correlativo, pedido.payload.total);
-    await sendOrder(pedido.payload.cliente, pedido.payload.productos, correlativo, pedido.payload.emails);
-
-    const pdfBuffer = await generarPDF(
-      pedido.payload.cliente,
-      pedido.payload.productos,
-      pedido.payload.total,
-      pedido.payload.items,
-      pedido.payload.notaPedido,
+    // 1) preparar y enviar orden (según tu flujo actual)
+    await crearPDF(
+      workingPayload.cliente,
+      workingPayload.vendedor,
+      workingPayload.productos,
       correlativo,
-      pedido.payload.hora,
-      pedido.payload.vendedor
+      workingPayload.total
     );
 
-    await emailer.sendMail(pdfBuffer, "pedidostoyoxpress@gmail.com", pedido.payload.notaCorreo, correlativo, pedido.payload.cliente.Nombre);
-    await emailer.sendMail(pdfBuffer, "toyoxpressca@gmail.com", pedido.payload.notaCorreo, correlativo, pedido.payload.cliente.Nombre);
-    await emailer.sendMail(pdfBuffer, "mamedina770@gmail.com", pedido.payload.notaCorreo, correlativo, pedido.payload.cliente.Nombre);
+    await sendOrder(
+      workingPayload.cliente,
+      workingPayload.productos,
+      correlativo,
+      workingPayload.emails
+    );
 
+    // 2) generar PDF final y enviar correos
+    const pdfBuffer = await generarPDF(
+      workingPayload.cliente,
+      workingPayload.productos,
+      workingPayload.total,
+      workingPayload.items,
+      workingPayload.notaPedido,
+      correlativo,
+      workingPayload.hora,
+      workingPayload.vendedor
+    );
+
+    await emailer.sendMail(
+      pdfBuffer,
+      "pedidostoyoxpress@gmail.com",
+      workingPayload.notaCorreo,
+      correlativo,
+      workingPayload.cliente?.Nombre
+    );
+    await emailer.sendMail(
+      pdfBuffer,
+      "toyoxpressca@gmail.com",
+      workingPayload.notaCorreo,
+      correlativo,
+      workingPayload.cliente?.Nombre
+    );
+    await emailer.sendMail(
+      pdfBuffer,
+      "mamedina770@gmail.com",
+      workingPayload.notaCorreo,
+      correlativo,
+      workingPayload.cliente?.Nombre
+    );
+
+    // 3) actualizar stock y reservas
     await Promise.all(
-        pedido.payload.productos.map(async producto => {
-          await updateStock(producto["Código"], producto["cantidad"]);
-          cancelarReserva(producto["Código"], pedido.payload.vendedor);
-        })
-      );
+      (workingPayload.productos || []).map(async (p) => {
+        await updateStock(p["Código"], p["cantidad"]);
+        cancelarReserva(p["Código"], workingPayload.vendedor);
+      })
+    );
 
-    pedido.estado = 'completado';
-    pedido.correlativo = correlativo;
-    pedido.procesadoEn = new Date();
-    await pedido.save();
+    // 4) persistencia final si el pedido existe en BD
+    if (pedidoDoc) {
+      pedidoDoc.estado = 'completado';
+      pedidoDoc.correlativo = correlativo;
+      pedidoDoc.procesadoEn = new Date();
+      await pedidoDoc.save();
+    }
 
     console.log('✅ Pedido completado');
+    return { ok: true, correlativo };
   } catch (err) {
-    pedido.estado = 'error';
-    pedido.error = err.message;
-    await pedido.save();
+    if (pedidoDoc) {
+      pedidoDoc.estado = 'error';
+      pedidoDoc.error = err.message;
+      await pedidoDoc.save();
+    }
     console.error('❌ Error procesando pedido:', err);
+    throw err;
   }
 }
 
-
-async function ciclo() {
-  const T = 20_000; // 60s entre rondas
-  try {
-    await procesarCola(); // procesa 0..N pedidos según tu lógica (actual: 1)
-  } catch (e) {
-    console.error('[WORKER] error en ciclo:', e);
-  } finally {
-    setTimeout(ciclo, T); // reprograma SIN solaparse
-  }
-}
-
-// Sólo auto-arranca si lo pedimos explícitamente por env
-if (process.env.START_WORKER === '1') {
-  console.log('[WORKER] start');
-  ciclo();
-}
-
-console.log('[WORKER] loaded (no auto-start)');
-
-module.exports = { procesarCola };
+module.exports = { procesarPedido };

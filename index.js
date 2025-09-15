@@ -35,6 +35,10 @@ app.use(express.static("app"));
 app.use("/reservas", require("./app/routes/reservas"));
 app.use(express.static("app"));
 
+app.use("/worker", require("./app/routes/worker"));
+app.use(express.static("app"));
+
+
 
 app.get('/events', (req, res) => {
   console.log("llegue a events index.js")
