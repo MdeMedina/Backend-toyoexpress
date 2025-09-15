@@ -64,4 +64,4 @@ async function procesarCola() {
   }
 }
 
-setInterval(procesarCola, 3000);
+setInterval(procesarCola, 60000);
