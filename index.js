@@ -15,7 +15,14 @@ dbConnect();
 
 const app = express();
 let server = http.createServer(app);
-
+app.use((req,res,next)=>{
+  const t0 = process.hrtime.bigint();
+  res.on('finish', ()=>{
+    const ms = Number(process.hrtime.bigint() - t0)/1e6;
+    if (ms>300) console.warn(`[SLOW] ${req.method} ${req.originalUrl} ${res.statusCode} ${ms.toFixed(0)}ms`);
+  });
+  next();
+});
 app.use(express.json({ limit: "10mb" }));
 app.use(cors({
   origin: 'http://front.toyoxpress.com', // Reemplaza con el origen de tu frontend
@@ -168,3 +175,4 @@ global.shared.sendFecha = (message) => {
 server.listen(PORT, () => {
   console.log("listening in port " + PORT);
 });
+
