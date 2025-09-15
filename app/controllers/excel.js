@@ -87,7 +87,9 @@ let fechas = await Fecha.find({})
 };4
 
 const getExcelClientes = async (condition, page) => {
+
 let codigo = condition ? { Nombre: new RegExp(condition.Nombre, "i")} : {};
+  const start = Date.now();
   let excel = await ExcelClientes.find(codigo)  
       .sort({ _id: -1 })
       .skip(page)
@@ -95,7 +97,9 @@ let codigo = condition ? { Nombre: new RegExp(condition.Nombre, "i")} : {};
       .lean()
       .exec();
     const total = await ExcelClientes.countDocuments(condition);
-  return { total, excel, };
+     const end = Date.now();
+      console.log(`⏱️ Query ExcelClientes tardó: ${end - start} ms`);
+  return { total, excel };
 };
 
 const updateExcelClientes = async (req, res) => {
@@ -120,16 +124,31 @@ const updateExcelClientes = async (req, res) => {
   }
 };
 
-const getExcelProductos = async (condition, page) => {
-let codigo = condition ? { Código: new RegExp(condition.Código, "i")} : {};
-  let excel = await ExcelProductos.find(codigo)  
+const escapeRegex = (s) => {
+  if (!s) return "";          // null, undefined, vacío
+  return String(s).replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+};
+
+
+const getExcelProductos = async (codigoSearch, offset, limit) => {
+  const filter = codigoSearch
+    ? { Código: { $regex: `^${escapeRegex(codigoSearch["Código"])}`, $options: "i" } }
+    : {};
+
+    console.log(codigoSearch, offset, limit, filter)
+
+
+  const [excel, total] = await Promise.all([
+    ExcelProductos.find(filter)
       .sort({ _id: -1 })
-      .skip(page)
-      .limit(parseInt(process.env.PAGINA))
+      .skip(offset)
+      .limit(limit)
       .lean()
-      .exec();
-    const total = await ExcelProductos.countDocuments(condition);
-  return { total, excel, };
+      .exec(),
+    ExcelProductos.countDocuments(filter),
+  ]);
+
+  return { total, excel };
 };
 
 const getCompleteExcelProductos = async (req, res) => {
