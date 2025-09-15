@@ -64,4 +64,24 @@ async function procesarCola() {
   }
 }
 
-setInterval(procesarCola, 60000);
+
+async function ciclo() {
+  const T = 20_000; // 60s entre rondas
+  try {
+    await procesarCola(); // procesa 0..N pedidos según tu lógica (actual: 1)
+  } catch (e) {
+    console.error('[WORKER] error en ciclo:', e);
+  } finally {
+    setTimeout(ciclo, T); // reprograma SIN solaparse
+  }
+}
+
+// Sólo auto-arranca si lo pedimos explícitamente por env
+if (process.env.START_WORKER === '1') {
+  console.log('[WORKER] start');
+  ciclo();
+}
+
+console.log('[WORKER] loaded (no auto-start)');
+
+module.exports = { procesarCola };
