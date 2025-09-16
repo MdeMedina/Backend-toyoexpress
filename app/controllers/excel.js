@@ -133,24 +133,43 @@ const updateExcelClientes = async (req, res) => {
 };
 
 const escapeRegex = (s) => {
-  if (!s) return "";          // null, undefined, vacío
+  if (!s) return "";
   return String(s).replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
 };
 
+const buildCodigoFilter = (termRaw) => {
+  const q = termRaw ? escapeRegex(String(termRaw).trim()) : "";
+  if (!q) return {};
+
+  return {
+    $or: [
+      { Código: { $regex: q, $options: "i" } },
+      {
+        $expr: {
+          $regexMatch: {
+            input: { $toString: "$Código" },
+            regex: q,
+            options: "i",
+          },
+        },
+      },
+    ],
+  };
+};
 
 const getExcelProductos = async (codigoSearch, offset, limit) => {
-  const filter = codigoSearch
-    ? { Código: { $regex: `^${escapeRegex(codigoSearch["Código"])}`, $options: "i" } }
-    : {};
+const term = typeof codigoSearch === "object" ? codigoSearch?.["Código"] : codigoSearch;
+const filter = buildCodigoFilter(term);
 
-    console.log(codigoSearch, offset, limit, filter)
-
+  console.log({ codigoSearch, offset, limit, filter });
 
   const [excel, total] = await Promise.all([
     ExcelProductos.find(filter)
       .sort({ _id: -1 })
-      .skip(offset)
-      .limit(limit)
+      .skip(offset || 0)
+      .limit(limit || 20)
+      // Si quieres ignorar tildes/diacríticos además de mayúsculas:
+      // .collation({ locale: "es", strength: 1 })
       .lean()
       .exec(),
     ExcelProductos.countDocuments(filter),
