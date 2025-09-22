@@ -2,6 +2,7 @@ const { Ingreso, Egreso, Movimiento } = require("../models/movimiento");
 const { DateTime } = require("luxon");
 const { formatDateHoy } = require("../helpers/dates/dates");
 const { FechaMonto } = require("../models/dias");
+const ZONA_LOCAL = "America/Caracas"; // <- Venezuela
 
 function fechaUnDiaAntes(fecha) {
     // Clonamos la fecha para no modificar la original
@@ -489,100 +490,114 @@ const getMoves = async (condition, page, cantidad, fechas, conditionSaldo, sort,
   let conditionWithArrays = {};
   let conditionSaldoWithArrays = {};
 
-  // Convertimos la condición para que cualquier valor que sea un string o número se convierta en un array con un solo elemento
+  // Normaliza condition
   if (condition) {
     conditionWithArrays = Object.entries(condition).reduce((acc, [key, value]) => {
-    if (Array.isArray(value) && key !== "pago") {
-      acc[key] = { $in: value }; // Utilizar $in si el valor es un array
-    } else if (key !== "status")  {
-      acc[key] = value; // Mantener el valor tal como está si no es un array
-    }
-    return acc;
+      if (Array.isArray(value) && key !== "pago") {
+        acc[key] = { $in: value };
+      } else if (key !== "status") {
+        acc[key] = value;
+      }
+      return acc;
     }, {});
   }
 
-if (conditionSaldo) {
-  conditionSaldoWithArrays = Object.entries(conditionSaldo).reduce((acc, [key, value]) => {
-    if (Array.isArray(value) && key !== "pago") {
+  // Normaliza conditionSaldo
+  if (conditionSaldo) {
+    conditionSaldoWithArrays = Object.entries(conditionSaldo).reduce((acc, [key, value]) => {
+      if (Array.isArray(value) && key !== "pago") {
+        acc[key] = { $in: value };
+      } else if (key !== "status" && key !== "pago") {
+        acc[key] = value;
+      }
+      return acc;
+    }, {});
+  }
 
-      acc[key] = { $in: value }; // Utilizar $in si el valor es un array
-    } else if (key !== "status" && key !== "pago") {
-      acc[key] = value; // Mantener el valor tal como está si no es un array
-    }
-    return acc;
-  }, {});
-}
+  // Condiciones adicionales por "pago"
   let aditionalCondition = {};
-    let aditionalConditionSaldo = {};
-  
+  let aditionalConditionSaldo = {};
+
   if (condition && condition.pago) {
     aditionalCondition = {
-      $and: condition.pago.map(item => ({ [item]: { $gt: 1 } }))
+      $and: condition.pago.map((item) => ({ [item]: { $gt: 1 } })),
     };
   }
 
-    if (conditionSaldo && conditionSaldo.pago) {
+  if (conditionSaldo && conditionSaldo.pago) {
     aditionalConditionSaldo = {
-      $and: conditionSaldo.pago.map(item => ({ [item]: { $gt: 1 } }))
+      $and: conditionSaldo.pago.map((item) => ({ [item]: { $gt: 1 } })),
     };
   }
 
+  // Filtro por nombre si vm === false
   if (vm === false) {
-    conditionWithArrays.name = nm
+    conditionWithArrays.name = nm;
   }
-let inicio = DateTime.fromISO(fechas.from).startOf("day").toUTC();
-inicio = new Date(inicio);
-inicio.setUTCHours(0);
-inicio.setUTCMinutes(0);
-inicio.setUTCSeconds(0);
-inicio.setUTCMilliseconds(0);
-const final = DateTime.fromISO(fechas.to).endOf("day").toUTC();
-const fecha = { $gte: inicio, $lte: final.toISO() };
 
- let vales
+  // =============================
+  // RANGO DE FECHAS (OPCIÓN B - UTC PURO)
+  // Interpreta from/to como días calendario en UTC
+  // [startUTC (incl), endExclusiveUTC (excl)]
+  // =============================
+  const startUTC = DateTime
+    .fromJSDate(new Date(fechas.from))
+    .toUTC()
+    .startOf("day")
+    .toJSDate();
 
-    if (condition.status === "Aprove") {
-        vales = { vale: { $ne: '' } };
-    }
-    // Si 'vale' es 'Unverified', busca objetos con 'vale' igual a un string vacío
-    else if (condition.status === "Unverified") {
-        vales = { vale: '' };
-    }
-    // Si 'vale' no está definido o es vacío, trae todos los objetos
-    else {
-        vales = {};
-    }
-      const finalConditionSaldo = {
+  const endExclusiveUTC = DateTime
+    .fromJSDate(new Date(fechas.to))
+    .toUTC()
+    .plus({ days: 1 })
+    .startOf("day")
+    .toJSDate();
+
+  const fecha = { $gte: startUTC, $lt: endExclusiveUTC };
+
+  // Filtro por status -> vale
+  let vales;
+  if (condition?.status === "Aprove") {
+    vales = { vale: { $ne: "" } };
+  } else if (condition?.status === "Unverified") {
+    vales = { vale: "" };
+  } else {
+    vales = {};
+  }
+
+  const finalConditionSaldo = {
     ...conditionSaldoWithArrays,
     ...aditionalConditionSaldo,
     ...vales,
     disabled: false,
-  }
+  };
+
   const finalCondition = {
     ...conditionWithArrays,
     ...aditionalCondition,
     ...vales,
     disabled: false,
-    fecha
+    fecha, // <-- rango UTC [incl, excl]
   };
- if (sort.fecha) {
-  sort = { ...sort, _id: sort.fecha}
-  console.log(sort)
- }
+
+  // Mantengo tu ajuste de sort
+  if (sort?.fecha) {
+    sort = { ...sort, _id: sort.fecha };
+  }
 
   const movimientos = await Movimiento.find(finalCondition)
     .sort(sort)
     .skip(page)
-    .limit(parseInt(cantidad))
+    .limit(parseInt(cantidad, 10))
     .lean()
     .exec();
 
-
-// Realizacion cambio de movimientos a documento fecha
-let vuelta = await sumarRestarMontos(finalConditionSaldo);
+  // Cálculo de saldos con la condición de saldo (sin rango de fecha, como ya lo tenías)
+  const vuelta = await sumarRestarMontos(finalConditionSaldo);
 
   const total = await Movimiento.countDocuments(finalCondition);
-  return {movimientos, total, ...vuelta}
+
+  return { movimientos, total, ...vuelta };
 };
 module.exports = {
   crearMovimiento,
