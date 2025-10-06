@@ -110,76 +110,153 @@ console.log("Productos insertados correctamente en la base de datos.");
 
 const assingProducts = async (req, res) => {
   const { body } = req;
-try {
-let crear = [];
-const actualizar = [];
-global.shared.resetLog()
 
+  try {
+    let crear = [];
+    const actualizar = [];
+    global.shared.resetLog();
 
-// Arrays para almacenar los SKUs de productos que existen y los que no
-const skusExistentes = [];
-const skusNoExistentes = [];
+    // Arrays de SKUs
+    const skusExistentes = [];
+    const skusNoExistentes = [];
 
+    for (const product of body.arr) {
+      if (product.exists) skusExistentes.push(product.sku);
+      else skusNoExistentes.push(product.sku);
+    }
 
-// Clasificar los productos en los arrays correspondientes
-for (const product of body.arr) {
-  if (product.exists) {
-    skusExistentes.push(product.sku);
-  } else {
-    skusNoExistentes.push(product.sku);
+    // Consultar MongoDB
+    const productosExistentes = await Producto.find({ sku: { $in: skusExistentes } });
+    crear = await Producto.find({ sku: { $in: skusNoExistentes } });
+
+    // Preparar productos para actualización
+    productosExistentes.forEach(product => {
+      body.arr.map(pod => {
+        if (pod.sku === product.sku) {
+          const productoLimpio = product.toObject();
+          productoLimpio.id = pod.id_producto;
+          actualizar.push(productoLimpio);
+        }
+      });
+    });
+
+    // Crear batch inicial
+    const data = {
+      create: crear.map(product => product.toObject()),
+      update: actualizar.map(product => product),
+    };
+
+    // Función para verificar los productos después de actualizar
+    const verificarActualizacion = async (productos) => {
+      const idsQuery = productos.map(p => p.id).join(',');
+      const resp = await WooCommerce.get("products", { include: idsQuery, per_page: 100 });
+      const wooData = resp.data;
+
+      return productos.map(local => {
+        const wooProd = wooData.find(p => p.id === local.id);
+        if (!wooProd) return { ...local, verified: false };
+
+        const stockOk = wooProd.stock_quantity === local.stock_quantity;
+        const priceOk = !local.price || wooProd.price === local.price;
+
+        return { ...local, verified: stockOk && priceOk };
+      });
+    };
+
+    // Función para reintentar actualización
+    const reintentarActualizacion = async (productos, intento = 1, maxIntentos = 3) => {
+      console.log(`🔁 Intento ${intento} de actualización (${productos.length} productos)`);
+
+      const dataRetry = { update: productos.map(p => p) };
+      await WooCommerce.post("products/batch", dataRetry);
+      await new Promise(r => setTimeout(r, 2000)); // espera antes de verificar
+
+      const verificados = await verificarActualizacion(productos);
+      const noActualizados = verificados.filter(p => !p.verified);
+
+      if (noActualizados.length > 0 && intento < maxIntentos) {
+        console.warn(`⚠️ ${noActualizados.length} productos aún no se actualizaron, reintentando...`);
+        await new Promise(r => setTimeout(r, intento * 2000)); // espera incremental
+        return await reintentarActualizacion(noActualizados, intento + 1, maxIntentos);
+      }
+
+      return verificados;
+    };
+
+    // 🔹 PRIMER intento
+    await WooCommerce.post("products/batch", data);
+    console.log("✅ Productos enviados a WooCommerce (batch inicial)");
+
+    await new Promise(r => setTimeout(r, 2000)); // Esperar a que se reflejen los cambios
+
+    // 🔹 Verificar si realmente se actualizaron
+    let verificados = await verificarActualizacion(actualizar);
+    let noActualizados = verificados.filter(p => !p.verified);
+
+    // 🔹 Reintentar si es necesario
+    if (noActualizados.length > 0) {
+      console.warn(`⚠️ ${noActualizados.length} productos no se actualizaron correctamente, reintentando...`);
+      const recheck = await reintentarActualizacion(noActualizados);
+      verificados = [...verificados.filter(p => p.verified), ...recheck];
+    }
+
+    // 🔹 Revisión final
+    const allVerified = verificados.every(p => p.verified);
+
+    if (!allVerified) {
+      console.error("❌ Algunos productos NO se actualizaron tras 3 intentos");
+      global.shared.logError("Productos no actualizados completamente tras reintentos");
+      res.status(207).send({
+        message: "Algunos productos no se actualizaron correctamente tras varios intentos.",
+        detalles: verificados.filter(p => !p.verified),
+      });
+      global.shared.sendToClients(
+        JSON.stringify({ index: body.index + 1, maximo: body.maximo, estado: false, nombre: body.nombre })
+      );
+      return;
+    }
+
+    // 🟢 Si todo está verificado, continuar flujo
+    console.log("✅ Todos los productos actualizados correctamente en WooCommerce");
+
+    if (arrayChunked.length > body.index + 1) {
+      const params = {
+        QueueUrl: "https://sqs.us-east-2.amazonaws.com/872515257475/Toyoxpress.fifo",
+        MessageBody: JSON.stringify({
+          arr: arrayChunked[body.index + 1],
+          index: body.index + 1,
+          maximo: body.maximo,
+          nombre: body.nombre,
+        }),
+        MessageGroupId: "grupo-1",
+        MessageDeduplicationId: `${body.index + 1}`,
+      };
+
+      try {
+        await client.send(new SendMessageCommand(params));
+      } catch (error) {
+        console.error("Error al enviar el mensaje a SQS:", error);
+      }
+    }
+
+    // 🔔 Notificar solo si TODO fue verificado correctamente
+    global.shared.sendToClients(
+      JSON.stringify({ index: body.index + 1, maximo: body.maximo, estado: true, nombre: body.nombre })
+    );
+
+    global.shared.logInfo(body.index);
+    res.status(200).send({ message: "Datos actualizados y verificados exitosamente en WooCommerce." });
+
+  } catch (error) {
+    console.error("❌ Error general:", error);
+    global.shared.logError(error);
+    global.shared.sendToClients(
+      JSON.stringify({ index: body.index + 1, maximo: body.maximo, estado: false, nombre: body.nombre })
+    );
+    res.status(500).send({ message: "Error al procesar la asignación." });
   }
-}
-
-// Consultar MongoDB para obtener los productos que existen y los que no
-const productosExistentes = await Producto.find({ sku: { $in: skusExistentes } });
-crear = await Producto.find({ sku: { $in: skusNoExistentes } });
-
-// Preparar productos para el array de `actualizar`
-productosExistentes.forEach(product => {
-body.arr.map(pod => {
-  if (pod.sku === product.sku) {
-     const productoLimpio = product.toObject(); // Convertimos a objeto simple
-    productoLimpio.id = pod.id_producto;    // Añadimos el `id` del producto en `body.arr`
-    actualizar.push(productoLimpio);
-  }
-})
-});
-// Preparar el objeto `data` para el batch
-const data = {
-  create: crear.map(product => product.toObject()), // Convertimos a objeto simple
-  update: actualizar.map(product => product),       // `actualizar` ya contiene objetos simples
 };
 
-// Enviar los datos a WooCommerce
-  let creacion = await WooCommerce.post("products/batch", data);
-
-  console.log("Mensaje eliminado de SQS");
-
-  if (arrayChunked.length > body.index + 1 ) {
-    const params = {
-      QueueUrl: "https://sqs.us-east-2.amazonaws.com/872515257475/Toyoxpress.fifo",
-      MessageBody: JSON.stringify({arr: arrayChunked[body.index+1], index: body.index+1, maximo: body.maximo, nombre: body.nombre}),
-      MessageGroupId: "grupo-1", 
-      MessageDeduplicationId: `${body.index+1}`, 
-    };
-    const command = new SendMessageCommand(params);
-    try {
-      const data = await client.send(command);
-    } catch (error) {
-      console.error("Error al enviar el mensaje:", error);
-    }
-  } else {
-
-  }
-  res.status(200).send({ message: "Datos Actualizados con exito!" });
-  global.shared.sendToClients(JSON.stringify({ index: body.index+1, maximo: body.maximo, estado: true, nombre: body.nombre}));
-  global.shared.logInfo(body.index)
-} catch (error) {
-console.log(error);
-global.shared.logError(error)
-global.shared.sendToClients(JSON.stringify({ index: body.index+1, maximo: body.maximo, estado: false, nombre: body.nombre}));
-}
-}
 
 module.exports = {
   makeProducts,
