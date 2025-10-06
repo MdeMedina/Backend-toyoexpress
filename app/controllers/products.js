@@ -116,7 +116,6 @@ const assingProducts = async (req, res) => {
     const actualizar = [];
     global.shared.resetLog();
 
-    // Arrays de SKUs
     const skusExistentes = [];
     const skusNoExistentes = [];
 
@@ -125,11 +124,9 @@ const assingProducts = async (req, res) => {
       else skusNoExistentes.push(product.sku);
     }
 
-    // Consultar MongoDB
     const productosExistentes = await Producto.find({ sku: { $in: skusExistentes } });
     crear = await Producto.find({ sku: { $in: skusNoExistentes } });
 
-    // Preparar productos para actualización
     productosExistentes.forEach(product => {
       body.arr.map(pod => {
         if (pod.sku === product.sku) {
@@ -140,13 +137,12 @@ const assingProducts = async (req, res) => {
       });
     });
 
-    // Crear batch inicial
     const data = {
       create: crear.map(product => product.toObject()),
       update: actualizar.map(product => product),
     };
 
-    // Función para verificar los productos después de actualizar
+    // 🔍 Verificar actualización
     const verificarActualizacion = async (productos) => {
       const idsQuery = productos.map(p => p.id).join(',');
       const resp = await WooCommerce.get("products", { include: idsQuery, per_page: 100 });
@@ -154,61 +150,92 @@ const assingProducts = async (req, res) => {
 
       return productos.map(local => {
         const wooProd = wooData.find(p => p.id === local.id);
-        if (!wooProd) return { ...local, verified: false };
+        if (!wooProd) return { ...local, verified: false, reason: 'Producto no encontrado en WooCommerce' };
 
         const stockOk = wooProd.stock_quantity === local.stock_quantity;
         const priceOk = !local.price || wooProd.price === local.price;
 
-        return { ...local, verified: stockOk && priceOk };
+        return {
+          ...local,
+          verified: stockOk && priceOk,
+          wooData: wooProd,
+          reason: !stockOk ? 'Stock no coincide' : (!priceOk ? 'Precio no coincide' : 'OK')
+        };
       });
     };
 
-    // Función para reintentar actualización
+    // 🔁 Reintentar actualización con logs detallados
     const reintentarActualizacion = async (productos, intento = 1, maxIntentos = 3) => {
       console.log(`🔁 Intento ${intento} de actualización (${productos.length} productos)`);
 
       const dataRetry = { update: productos.map(p => p) };
-      await WooCommerce.post("products/batch", dataRetry);
-      await new Promise(r => setTimeout(r, 2000)); // espera antes de verificar
+      try {
+        const resp = await WooCommerce.post("products/batch", dataRetry);
+        console.log(`📦 Respuesta WooCommerce (intento ${intento}):`, JSON.stringify(resp.data, null, 2));
+      } catch (err) {
+        console.error(`❌ Error en la petición a WooCommerce (intento ${intento}):`, err.response?.data || err.message);
+      }
+
+      await new Promise(r => setTimeout(r, 2000));
 
       const verificados = await verificarActualizacion(productos);
       const noActualizados = verificados.filter(p => !p.verified);
 
+      if (noActualizados.length > 0) {
+        console.warn(`⚠️ ${noActualizados.length} productos aún no se actualizaron correctamente:`);
+        noActualizados.forEach(p =>
+          console.warn(`   ➤ ${p.id} | ${p.sku || '(sin SKU)'} | Motivo: ${p.reason}`)
+        );
+      }
+
       if (noActualizados.length > 0 && intento < maxIntentos) {
-        console.warn(`⚠️ ${noActualizados.length} productos aún no se actualizaron, reintentando...`);
-        await new Promise(r => setTimeout(r, intento * 2000)); // espera incremental
+        await new Promise(r => setTimeout(r, intento * 2000));
         return await reintentarActualizacion(noActualizados, intento + 1, maxIntentos);
       }
 
       return verificados;
     };
 
-    // 🔹 PRIMER intento
-    await WooCommerce.post("products/batch", data);
+    // 🚀 Primer intento
+    const respBatch = await WooCommerce.post("products/batch", data);
     console.log("✅ Productos enviados a WooCommerce (batch inicial)");
+    console.log("📦 Respuesta inicial WooCommerce:", JSON.stringify(respBatch.data, null, 2));
 
-    await new Promise(r => setTimeout(r, 2000)); // Esperar a que se reflejen los cambios
+    await new Promise(r => setTimeout(r, 2000));
 
-    // 🔹 Verificar si realmente se actualizaron
     let verificados = await verificarActualizacion(actualizar);
     let noActualizados = verificados.filter(p => !p.verified);
 
-    // 🔹 Reintentar si es necesario
     if (noActualizados.length > 0) {
       console.warn(`⚠️ ${noActualizados.length} productos no se actualizaron correctamente, reintentando...`);
+      noActualizados.forEach(p =>
+        console.warn(`   ➤ ${p.id} | ${p.sku || '(sin SKU)'} | Motivo: ${p.reason}`)
+      );
       const recheck = await reintentarActualizacion(noActualizados);
       verificados = [...verificados.filter(p => p.verified), ...recheck];
     }
 
-    // 🔹 Revisión final
     const allVerified = verificados.every(p => p.verified);
 
     if (!allVerified) {
       console.error("❌ Algunos productos NO se actualizaron tras 3 intentos");
+      const fallidos = verificados.filter(p => !p.verified);
+      console.table(
+        fallidos.map(p => ({
+          ID: p.id,
+          SKU: p.sku,
+          Motivo: p.reason,
+          StockEsperado: p.stock_quantity,
+          StockWoo: p.wooData?.stock_quantity,
+          PrecioEsperado: p.price,
+          PrecioWoo: p.wooData?.price,
+        }))
+      );
+
       global.shared.logError("Productos no actualizados completamente tras reintentos");
       res.status(207).send({
         message: "Algunos productos no se actualizaron correctamente tras varios intentos.",
-        detalles: verificados.filter(p => !p.verified),
+        detalles: fallidos,
       });
       global.shared.sendToClients(
         JSON.stringify({ index: body.index + 1, maximo: body.maximo, estado: false, nombre: body.nombre })
@@ -216,7 +243,6 @@ const assingProducts = async (req, res) => {
       return;
     }
 
-    // 🟢 Si todo está verificado, continuar flujo
     console.log("✅ Todos los productos actualizados correctamente en WooCommerce");
 
     if (arrayChunked.length > body.index + 1) {
@@ -239,7 +265,6 @@ const assingProducts = async (req, res) => {
       }
     }
 
-    // 🔔 Notificar solo si TODO fue verificado correctamente
     global.shared.sendToClients(
       JSON.stringify({ index: body.index + 1, maximo: body.maximo, estado: true, nombre: body.nombre })
     );
@@ -256,6 +281,7 @@ const assingProducts = async (req, res) => {
     res.status(500).send({ message: "Error al procesar la asignación." });
   }
 };
+
 
 
 module.exports = {
