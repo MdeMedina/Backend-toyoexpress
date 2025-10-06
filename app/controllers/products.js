@@ -137,10 +137,25 @@ const assingProducts = async (req, res) => {
       });
     });
 
-    const data = {
-      create: crear.map(product => product.toObject()),
-      update: actualizar.map(product => product),
+const data = {
+  create: crear.map(p => p.toObject()),
+  update: actualizar.map(p => {
+    const prod = p.toObject ? p.toObject() : p;
+
+    return {
+      id: prod.id,
+      sku: prod.sku,
+      name: prod.name,
+      regular_price: prod.regular_price?.toString() || prod.price?.toString() || "",
+      sale_price: prod.sale_price?.toString() || "",
+      stock_quantity: Number(prod.stock_quantity ?? 0),
+      manage_stock: true,
+      status: prod.status || "publish",
+      attributes: prod.attributes || [],
+      meta_data: prod.meta_data || [],
     };
+  }),
+};
 
     // 🔍 Verificar actualización
     const verificarActualizacion = async (productos) => {
