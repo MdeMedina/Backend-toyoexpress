@@ -181,7 +181,7 @@ const getExcelProductos = async (codigoSearch, offset, limit) => {
   console.timeEnd("📊 ExcelProductos.find().exec()");
 
   console.time("📈 ExcelProductos.countDocuments()");
-  const totalPromise = ExcelProductos.countDocuments(filter).hint({ "Código": 1 });
+  const totalPromise = ExcelProductos.countDocuments(filter)
 
   console.timeEnd("📈 ExcelProductos.countDocuments()");
 
