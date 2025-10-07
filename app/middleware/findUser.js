@@ -5,7 +5,12 @@ const findAndAssignUser = async (req, res, next) => {
 
   try {
     console.time('🔍 findById query')
-    const user = await User.findById(req.auth._id).lean()
+const user = await User.findById(req.auth._id)
+  .lean()
+  .explain('executionStats') // 👈 te dice qué está pasando
+
+console.log('📊 Stats:', user.executionStats)
+
     console.timeEnd('🔍 findById query')
 
     if (!user) {
