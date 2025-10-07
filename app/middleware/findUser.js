@@ -1,30 +1,31 @@
-const User = require('../models/user')
+
+const User = require('../models/user');
+const NodeCache = require('node-cache');
+const userExistsCache = new NodeCache({ stdTTL: 3600 }); // 1 hora
 
 const findAndAssignUser = async (req, res, next) => {
-  console.time('⏱️ findAndAssignUser')
-
   try {
-    console.time('🔍 findById query')
-const user = await User.findById(req.auth._id)
-  .lean()
-  .explain('executionStats') // 👈 te dice qué está pasando
-
-console.log('📊 Stats:', user.executionStats)
-
-    console.timeEnd('🔍 findById query')
-
-    if (!user) {
-      console.timeEnd('⏱️ findAndAssignUser')
-      return res.status(401).end()
+    const userId = req.auth._id.toString();
+    
+    // Verifica cache primero
+    if (userExistsCache.has(userId)) {
+      req.user = req.auth; // Usa data del token
+      return next();
     }
 
-    req.user = user
-    console.timeEnd('⏱️ findAndAssignUser')
-    next()
+    // Solo verifica que existe (sin traer data)
+    const exists = await User.exists({ _id: userId });
+    
+    if (!exists) {
+      return res.status(401).json({ error: 'Usuario no encontrado' });
+    }
+
+    userExistsCache.set(userId, true);
+    req.user = req.auth; // Usa data del token
+    next();
   } catch (error) {
-    console.timeEnd('⏱️ findAndAssignUser')
-    next(error)
+    next(error);
   }
 }
 
-module.exports = findAndAssignUser
+module.exports = findAndAssignUser;
