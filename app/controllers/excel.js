@@ -158,22 +158,38 @@ const buildCodigoFilter = (termRaw) => {
 };
 
 const getExcelProductos = async (codigoSearch, offset, limit) => {
-const term = typeof codigoSearch === "object" ? codigoSearch?.["Código"] : codigoSearch;
-const filter = buildCodigoFilter(term);
-
+  console.time("⏱️ getExcelProductos total");
+  console.time("Busqueda del filtro con codigo");
+  const term = typeof codigoSearch === "object" ? codigoSearch?.["Código"] : codigoSearch;
+  console.timeEnd("Busqueda del filtro con codigo");
+  console.time("Construccion del filtro con codigo");
+  const filter = buildCodigoFilter(term);
+  console.timeEnd("Construccion del filtro con codigo");
+  console.time("🔍 ExcelProductos.find()");
   console.log({ codigoSearch, offset, limit, filter });
 
-  const [excel, total] = await Promise.all([
-    ExcelProductos.find(filter)
-      .sort({ _id: -1 })
-      .skip(offset || 0)
-      .limit(limit || 20)
-      // Si quieres ignorar tildes/diacríticos además de mayúsculas:
-      // .collation({ locale: "es", strength: 1 })
-      .lean()
-      .exec(),
-    ExcelProductos.countDocuments(filter),
-  ]);
+  // 🔹 Medir cada parte
+  console.time("🔍 ExcelProductos.find()");
+  const query = ExcelProductos.find(filter)
+    .sort({ _id: -1 })
+    .skip(offset || 0)
+    .limit(limit || 20)
+    .lean();
+  console.timeEnd("🔍 ExcelProductos.find() [query creation]");
+
+  console.time("📊 ExcelProductos.find().exec()");
+  const excelPromise = query.exec();
+  console.timeEnd("📊 ExcelProductos.find().exec() [start]");
+
+  console.time("📈 ExcelProductos.countDocuments()");
+  const totalPromise = ExcelProductos.countDocuments(filter);
+  console.timeEnd("📈 ExcelProductos.countDocuments() [start]");
+
+  console.time("🕓 Esperando promesas paralelas");
+  const [excel, total] = await Promise.all([excelPromise, totalPromise]);
+  console.timeEnd("🕓 Esperando promesas paralelas");
+
+  console.timeEnd("⏱️ getExcelProductos total");
 
   return { total, excel };
 };
