@@ -175,15 +175,15 @@ const getExcelProductos = async (codigoSearch, offset, limit) => {
     .skip(offset || 0)
     .limit(limit || 20)
     .lean();
-  console.timeEnd("🔍 ExcelProductos.find() [query creation]");
+  console.timeEnd("🔍 ExcelProductos.find()");
 
   console.time("📊 ExcelProductos.find().exec()");
   const excelPromise = query.exec();
-  console.timeEnd("📊 ExcelProductos.find().exec() [start]");
+  console.timeEnd("📊 ExcelProductos.find().exec()");
 
   console.time("📈 ExcelProductos.countDocuments()");
   const totalPromise = ExcelProductos.countDocuments(filter);
-  console.timeEnd("📈 ExcelProductos.countDocuments() [start]");
+  console.timeEnd("📈 ExcelProductos.countDocuments()");
 
   console.time("🕓 Esperando promesas paralelas");
   const [excel, total] = await Promise.all([excelPromise, totalPromise]);
