@@ -165,7 +165,6 @@ const getExcelProductos = async (codigoSearch, offset, limit) => {
   console.time("Construccion del filtro con codigo");
   const filter = buildCodigoFilter(term);
   console.timeEnd("Construccion del filtro con codigo");
-  console.time("🔍 ExcelProductos.find()");
   console.log({ codigoSearch, offset, limit, filter });
 
   // 🔹 Medir cada parte
@@ -182,7 +181,8 @@ const getExcelProductos = async (codigoSearch, offset, limit) => {
   console.timeEnd("📊 ExcelProductos.find().exec()");
 
   console.time("📈 ExcelProductos.countDocuments()");
-  const totalPromise = ExcelProductos.countDocuments(filter);
+  const totalPromise = ExcelProductos.countDocuments(filter).hint({ "Código": 1 });
+
   console.timeEnd("📈 ExcelProductos.countDocuments()");
 
   console.time("🕓 Esperando promesas paralelas");
