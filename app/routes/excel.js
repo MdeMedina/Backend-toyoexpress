@@ -15,15 +15,31 @@ const router = express.Router();
 router.get("/productsComplete", isAuthenticated ,getCompleteExcelProductos);
 router.get("/fecha", isAuthenticated ,fechaget);
 router.post("/products", isAuthenticated, async (req, res) => {
+  console.time("⏱️ /products TOTAL");
+
   try {
+    console.time("📥 Lectura y parseo de req.body");
     const { Código, pagina } = req.body;
+    console.timeEnd("📥 Lectura y parseo de req.body");
+
+    console.time("⚙️ Cálculo de paginación");
     const perPage = parseInt(process.env.PAGINA, 10) || 30;
     const page = Math.max(1, parseInt(pagina, 10) || 1);
     const offset = (page - 1) * perPage;
+    console.timeEnd("⚙️ Cálculo de paginación");
 
+    console.time("📦 Llamada a getExcelProductos");
     const datos = await getExcelProductos(Código, offset, perPage);
-    return res.json(datos);
+    console.timeEnd("📦 Llamada a getExcelProductos");
+
+    console.time("📤 Serialización de respuesta (res.json)");
+    res.json(datos);
+    console.timeEnd("📤 Serialización de respuesta (res.json)");
+
+    console.timeEnd("⏱️ /products TOTAL");
   } catch (error) {
+    console.timeEnd("⏱️ /products TOTAL");
+    console.error("❌ Error en /products:", error);
     return res.json({ errorMessage: error.message });
   }
 });

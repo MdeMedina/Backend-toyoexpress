@@ -158,39 +158,26 @@ const buildCodigoFilter = (termRaw) => {
 };
 
 const getExcelProductos = async (codigoSearch, offset, limit) => {
-  console.time("⏱️ getExcelProductos total");
-  console.time("Busqueda del filtro con codigo");
+
   const term = typeof codigoSearch === "object" ? codigoSearch?.["Código"] : codigoSearch;
-  console.timeEnd("Busqueda del filtro con codigo");
-  console.time("Construccion del filtro con codigo");
+
   const filter = buildCodigoFilter(term);
-  console.timeEnd("Construccion del filtro con codigo");
+
   console.log({ codigoSearch, offset, limit, filter });
 
   // 🔹 Medir cada parte
-  console.time("🔍 ExcelProductos.find()");
+
   const query = ExcelProductos.find(filter)
     .sort({ _id: -1 })
     .skip(offset || 0)
     .limit(limit || 20)
     .lean();
-  console.timeEnd("🔍 ExcelProductos.find()");
 
-  console.time("📊 ExcelProductos.find().exec()");
   const excelPromise = query.exec();
-  console.timeEnd("📊 ExcelProductos.find().exec()");
-
-  console.time("📈 ExcelProductos.countDocuments()");
+ 
   const totalPromise = ExcelProductos.countDocuments(filter)
 
-  console.timeEnd("📈 ExcelProductos.countDocuments()");
-
-  console.time("🕓 Esperando promesas paralelas");
   const [excel, total] = await Promise.all([excelPromise, totalPromise]);
-  console.timeEnd("🕓 Esperando promesas paralelas");
-
-  console.timeEnd("⏱️ getExcelProductos total");
-
   return { total, excel };
 };
 
