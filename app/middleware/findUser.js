@@ -1,21 +1,23 @@
 const User = require('../models/user')
 
 const findAndAssignUser = async (req, res, next) => {
-  console.time('⏱️ findAndAssignUser') // ⏱️ Inicia medición
+  console.time('⏱️ findAndAssignUser')
 
   try {
-    const user = await User.findById(req.auth._id)
+    console.time('🔍 findById query')
+    const user = await User.findById(req.auth._id).lean()
+    console.timeEnd('🔍 findById query')
 
     if (!user) {
-      console.timeEnd('⏱️ findAndAssignUser') // 🛑 Finaliza si no hay usuario
+      console.timeEnd('⏱️ findAndAssignUser')
       return res.status(401).end()
     }
 
     req.user = user
-    console.timeEnd('⏱️ findAndAssignUser') // ✅ Termina medición
+    console.timeEnd('⏱️ findAndAssignUser')
     next()
   } catch (error) {
-    console.timeEnd('⏱️ findAndAssignUser') // ❌ Asegura cierre de medición incluso en error
+    console.timeEnd('⏱️ findAndAssignUser')
     next(error)
   }
 }
