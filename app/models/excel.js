@@ -1,7 +1,8 @@
+const { text } = require("body-parser");
 const mongoose = require("mongoose");
 
 const ExcelProductos = mongoose.model("Excel", {
-  Código: { type: String, required: true },
+  Código: { type: String, required: true, text: true },
   "Nombre Corto": { type: String, required: true },
   Referencia: { type: String },
   Marca: { type: String },

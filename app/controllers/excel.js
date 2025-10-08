@@ -1,6 +1,8 @@
 const { ExcelProductos, ExcelClientes } = require("../models/excel");
 const Fecha = require("../models/fecha");
 
+
+
 function combinarArraysSinRepeticiones(array1, array2) {
   const codigosArray1 = array1.map((obj) => obj.Código);
   const codigosArray2 = array2.map((obj) => obj.Código);
@@ -132,66 +134,45 @@ const updateExcelClientes = async (req, res) => {
   }
 };
 
-const escapeRegex = (s) => {
-  if (!s) return "";
-  return String(s).replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
-};
 
 const buildCodigoFilter = (termRaw) => {
-  const q = termRaw ? escapeRegex(String(termRaw).trim()) : "";
+  const q = termRaw ? String(termRaw).trim() : "";
   if (!q) return {};
-
-  return {
-    $or: [
-      { Código: { $regex: q, $options: "i" } },
-      {
-        $expr: {
-          $regexMatch: {
-            input: { $toString: "$Código" },
-            regex: q,
-            options: "i",
-          },
-        },
-      },
-    ],
-  };
+  
+  return { $text: { $search: q } };
 };
+
+
 
 const getExcelProductos = async (codigoSearch, offset, limit) => {
   console.time("⏱️ getExcelProductos total");
-  console.time("Busqueda del filtro con codigo");
+  
   const term = typeof codigoSearch === "object" ? codigoSearch?.["Código"] : codigoSearch;
-  console.timeEnd("Busqueda del filtro con codigo");
-  console.time("Construccion del filtro con codigo");
   const filter = buildCodigoFilter(term);
-  console.timeEnd("Construccion del filtro con codigo");
-  console.log({ codigoSearch, offset, limit, filter });
+  
+  console.log("🔍 Filter:", filter);
 
-  // 🔹 Medir cada parte
-  console.time("🔍 ExcelProductos.find()");
-  const query = ExcelProductos.find(filter)
-    .sort({ _id: -1 })
-    .skip(offset || 0)
-    .limit(limit || 20)
-    .lean();
-  console.timeEnd("🔍 ExcelProductos.find()");
-
-  console.time("📊 ExcelProductos.find().exec()");
-  const excelPromise = query.exec();
-  console.timeEnd("📊 ExcelProductos.find().exec()");
-
-  console.time("📈 ExcelProductos.countDocuments()");
-  const totalPromise = ExcelProductos.countDocuments(filter)
-
-  console.timeEnd("📈 ExcelProductos.countDocuments()");
-
-  console.time("🕓 Esperando promesas paralelas");
-  const [excel, total] = await Promise.all([excelPromise, totalPromise]);
-  console.timeEnd("🕓 Esperando promesas paralelas");
-
+  console.time("🕓 Query + Count paralelas");
+  
+  const [excel, total] = await Promise.all([
+    ExcelProductos.find(filter)
+      .sort({ _id: -1 })
+      .skip(offset || 0)
+      .limit(limit || 20)
+      .lean(),
+    
+    offset === 0 
+      ? ExcelProductos.countDocuments(filter)
+      : Promise.resolve(null)
+  ]);
+  
+  console.timeEnd("🕓 Query + Count paralelas");
   console.timeEnd("⏱️ getExcelProductos total");
 
-  return { total, excel };
+  return { 
+    total: total || excel.length, 
+    excel 
+  };
 };
 
 const getCompleteExcelProductos = async (req, res) => {
