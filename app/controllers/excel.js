@@ -152,27 +152,18 @@ const getExcelProductos = async (codigoSearch, offset, limit) => {
   const term = typeof codigoSearch === "object" ? codigoSearch?.["Código"] : codigoSearch;
   const filter = buildCodigoFilter(term);
 
-  console.time("🕓 Query + Count");
-  
-  const [excel, total] = await Promise.all([
-    ExcelProductos.find(filter)
-      .sort({ _id: -1 })
-      .skip(offset || 0)
-      .limit(limit || 20)
-      .lean(),
-    
-    // Count solo en primera página
-    offset === 0 
-      ? ExcelProductos.countDocuments(filter)
-      : Promise.resolve(null)
-  ]);
-  
-  console.timeEnd("🕓 Query + Count");
+  console.time("🕓 Query SIN count");
+  const excel = await ExcelProductos.find(filter)
+    .sort({ _id: -1 })
+    .skip(offset || 0)
+    .limit(limit || 20)
+    .lean();
+  console.timeEnd("🕓 Query SIN count");
+
   console.timeEnd("⏱️ getExcelProductos total");
 
-  return { total, excel };
+  return { total: 0, excel }; // Sin count para probar
 };
-
 const getCompleteExcelProductos = async (req, res) => {
   let excel = await ExcelProductos.find({});
 
