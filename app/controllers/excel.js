@@ -151,19 +151,41 @@ const getExcelProductos = async (codigoSearch, offset, limit) => {
   
   const term = typeof codigoSearch === "object" ? codigoSearch?.["Código"] : codigoSearch;
   const filter = buildCodigoFilter(term);
+  
+  console.log("🔍 Filter usado:", JSON.stringify(filter));
 
-  console.time("🕓 Query SIN count");
-  const excel = await ExcelProductos.find(filter)
+  // 👇 TEMPORAL: Agrega explain para debugging
+  const explainResult = await ExcelProductos.find(filter)
     .sort({ _id: -1 })
     .skip(offset || 0)
     .limit(limit || 20)
-    .lean();
-  console.timeEnd("🕓 Query SIN count");
+    .explain('executionStats');
+
+  console.log("📊 EXPLAIN STATS:", {
+    executionTimeMillis: explainResult.executionStats.executionTimeMillis,
+    totalDocsExamined: explainResult.executionStats.totalDocsExamined,
+    nReturned: explainResult.executionStats.nReturned,
+    stage: explainResult.executionStats.executionStages.stage,
+    indexUsed: explainResult.executionStats.executionStages.indexName || '⚠️ NO INDEX USADO'
+  });
+
+  // Query normal
+  console.time("🕓 Query real");
+  const [excel, total] = await Promise.all([
+    ExcelProductos.find(filter)
+      .sort({ _id: -1 })
+      .skip(offset || 0)
+      .limit(limit || 20)
+      .lean(),
+    offset === 0 ? ExcelProductos.countDocuments(filter) : null
+  ]);
+  console.timeEnd("🕓 Query real");
 
   console.timeEnd("⏱️ getExcelProductos total");
 
-  return { total: 0, excel }; // Sin count para probar
+  return { total, excel };
 };
+
 const getCompleteExcelProductos = async (req, res) => {
   let excel = await ExcelProductos.find({});
 
