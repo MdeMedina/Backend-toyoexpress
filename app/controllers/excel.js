@@ -133,26 +133,26 @@ const updateExcelClientes = async (req, res) => {
     res.status(200).send({ message: "Excel Actualizado con éxito!" });
   }
 };
-
-
-const buildCodigoFilter = (termRaw) => {
-  const q = termRaw ? String(termRaw).trim() : "";
-  if (!q) return {};
-  
-  return { $text: { $search: q } };
+const escapeRegex = (s) => {
+  if (!s) return "";
+  return String(s).replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
 };
 
+const buildCodigoFilter = (termRaw) => {
+  const q = termRaw ? escapeRegex(String(termRaw).trim()) : "";
+  if (!q) return {};
 
+  // 🔥 Regex simple - busca en cualquier parte
+  return { Código: { $regex: q, $options: "i" } };
+};
 
 const getExcelProductos = async (codigoSearch, offset, limit) => {
   console.time("⏱️ getExcelProductos total");
   
   const term = typeof codigoSearch === "object" ? codigoSearch?.["Código"] : codigoSearch;
   const filter = buildCodigoFilter(term);
-  
-  console.log("🔍 Filter:", filter);
 
-  console.time("🕓 Query + Count paralelas");
+  console.time("🕓 Query + Count");
   
   const [excel, total] = await Promise.all([
     ExcelProductos.find(filter)
@@ -161,18 +161,16 @@ const getExcelProductos = async (codigoSearch, offset, limit) => {
       .limit(limit || 20)
       .lean(),
     
+    // Count solo en primera página
     offset === 0 
       ? ExcelProductos.countDocuments(filter)
       : Promise.resolve(null)
   ]);
   
-  console.timeEnd("🕓 Query + Count paralelas");
+  console.timeEnd("🕓 Query + Count");
   console.timeEnd("⏱️ getExcelProductos total");
 
-  return { 
-    total: total || excel.length, 
-    excel 
-  };
+  return { total, excel };
 };
 
 const getCompleteExcelProductos = async (req, res) => {
