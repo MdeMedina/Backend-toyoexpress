@@ -266,7 +266,7 @@ const assingProducts = async (req, res) => {
 
     if (arrayChunked.length > body.index + 1) {
       const params = {
-        QueueUrl: "https://sqs.us-east-2.amazonaws.com/872515257475/Toyoxpress.fifo",
+        QueueUrl: "https://sqs.us-east-1.amazonaws.com/465836752361/Productos.fifo",
         MessageBody: JSON.stringify({
           arr: arrayChunked[body.index + 1],
           index: body.index + 1,
