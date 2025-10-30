@@ -16,8 +16,8 @@ const WooCommerce = new WooCommerceRestApi({
 
 
 const client = new SQSClient({ region: "us-east-2",   credentials: {
-    accessKeyId: process.env.AWS_ACCESS_KEY_ID,
-    secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY,
+    accessKeyId: process.env.AWS_ACCESS_KEY_ID_DEV,
+    secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY_DEV,
   }}); 
 
 
@@ -80,7 +80,7 @@ const makeProducts = async (req, res) => {
  Producto.insertMany(arrayBueno);
 console.log("Productos insertados correctamente en la base de datos.");
   const params = {
-    QueueUrl: "https://sqs.us-east-2.amazonaws.com/872515257475/Toyoxpress.fifo",
+    QueueUrl: "https://sqs.us-east-1.amazonaws.com/465836752361/Productos.fifo",
     MessageBody: JSON.stringify({arr: arrayChunked[0], index: 0, maximo: length, nombre: body.nombre}),
     MessageGroupId: "grupo-1",
     MessageDeduplicationId: `0`, 
