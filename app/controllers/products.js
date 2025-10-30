@@ -15,7 +15,7 @@ const WooCommerce = new WooCommerceRestApi({
 });
 
 
-const client = new SQSClient({ region: "us-east-2",   credentials: {
+const client = new SQSClient({   region: process.env.AWS_REGION,   credentials: {
     accessKeyId: process.env.AWS_ACCESS_KEY_ID_DEV,
     secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY_DEV,
   }}); 
