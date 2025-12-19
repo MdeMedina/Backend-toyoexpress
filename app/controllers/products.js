@@ -44,9 +44,9 @@ const makeProducts = async (req, res) => {
       return {  
         name: producto["Nombre Corto"],
         sku: producto.Código,
-        price: producto["Precio Mayor"],
-        regular_price: producto["Precio Mayor"],
-        sale_price: producto["Precio Oferta"],
+        price: producto["Precio Minimo"],
+        regular_price: producto["Precio Minimo"],
+        sale_price: "",
         manage_stock: true,
         status: "publish",
         stock_quantity: producto["Existencia Actual"],
@@ -58,10 +58,10 @@ const makeProducts = async (req, res) => {
           variation: false,
           options: [producto.Marca]
   }],
-  meta_data: [{ key: 'cliente 2 price', value: producto.precio2 },
+  meta_data: [{ key: 'cliente 2 price', value: producto["Precio Mayor"] },
       {
     key: 'festiUserRolePrices',
-    value: `{"cliente2":"${producto.precio2}","salePrice":{"cliente2":""},"schedule":{"cliente2":{"date_from":"","date_to":""}}}`
+    value: `{"cliente2":"${producto["Precio Mayor"]}","salePrice":{"cliente2":""},"schedule":{"cliente2":{"date_from":"","date_to":""}}}`
   }
   ],
 }
