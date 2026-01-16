@@ -78,6 +78,13 @@ async function procesarPedido({ pedidoId, payload }) {
     );
     await emailer.sendMail(
       pdfBuffer,
+      "hectorumerez@gmail.com",
+      workingPayload.notaCorreo,
+      correlativo,
+      workingPayload.cliente?.Nombre
+    );
+    await emailer.sendMail(
+      pdfBuffer,
       "toyoxpressca@gmail.com",
       workingPayload.notaCorreo,
       correlativo,
