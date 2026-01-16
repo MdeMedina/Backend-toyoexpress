@@ -139,11 +139,17 @@ const escapeRegex = (s) => {
 };
 
 const buildCodigoFilter = (termRaw) => {
-  const q = termRaw ? escapeRegex(String(termRaw).trim()) : "";
+  const q = termRaw ? String(termRaw).trim() : "";
   if (!q) return {};
 
-  // 🔥 Regex simple - busca en cualquier parte
-  return { Código: { $regex: q, $options: "i" } };
+  // Optimización: Si el término no tiene caracteres especiales regex y es corto,
+  // usar búsqueda por prefijo (más eficiente con índices)
+  const escapedQ = escapeRegex(q);
+  
+  // Para búsquedas por prefijo (comienzan desde el inicio), usar $regex con ^
+  // Esto permite que MongoDB use el índice de manera más eficiente
+  // El índice en Código ayudará a optimizar esta búsqueda
+  return { Código: { $regex: `^${escapedQ}`, $options: "i" } };
 };
 
 const getExcelProductos = async (codigoSearch, offset, limit) => {
@@ -154,24 +160,39 @@ const getExcelProductos = async (codigoSearch, offset, limit) => {
   
   console.log("🔍 Filter usado:", JSON.stringify(filter));
 
-  // Query de datos
+  // Query de datos con timeout y optimizaciones
   console.time("📊 find() - await");
   const excel = await ExcelProductos.find(filter)
     .sort({ _id: -1 })
     .skip(offset || 0)
     .limit(limit || 20)
-    .lean();
+    .lean()
+    .maxTimeMS(5000); // Timeout de 5 segundos para la consulta
   console.timeEnd("📊 find() - await");
   
   console.log(`📦 find() devolvió ${excel.length} documentos`);
 
-  // Count separado
+  // Count solo cuando es necesario (primera página o cuando se solicita explícitamente)
+  // Usar estimatedDocumentCount para queries vacías (más rápido)
   let total = null;
-  if (offset === 0) {
+  if (offset === 0 && Object.keys(filter).length > 0) {
     console.time("📈 countDocuments() - await");
-    total = await ExcelProductos.countDocuments(filter);
-    console.timeEnd("📈 countDocuments() - await");
-    console.log(`📊 Total en DB: ${total}`);
+    try {
+      total = await ExcelProductos.countDocuments(filter).maxTimeMS(3000);
+      console.timeEnd("📈 countDocuments() - await");
+      console.log(`📊 Total en DB: ${total}`);
+    } catch (error) {
+      console.warn("⚠️ Error en countDocuments (usando length como fallback):", error.message);
+      total = excel.length; // Fallback si countDocuments falla
+    }
+  } else if (offset === 0 && Object.keys(filter).length === 0) {
+    // Para queries sin filtro, usar estimatedDocumentCount (más rápido)
+    try {
+      total = await ExcelProductos.estimatedDocumentCount().maxTimeMS(2000);
+      console.log(`📊 Total estimado en DB: ${total}`);
+    } catch (error) {
+      console.warn("⚠️ Error en estimatedDocumentCount:", error.message);
+    }
   }
 
   console.timeEnd("⏱️ getExcelProductos total");
