@@ -1,6 +1,39 @@
 const { Producto } = require("../models/product");
 const WooCommerceRestApi = require("@woocommerce/woocommerce-rest-api").default;
 const { SQSClient, SendMessageCommand, DeleteMessageCommand } = require("@aws-sdk/client-sqs");
+const fs = require("fs");
+const path = require("path");
+
+// Cargar el archivo JSON de categorías
+const categoriasPath = path.join(__dirname, "../utils/codigos_categoria.json");
+const categoriasData = JSON.parse(fs.readFileSync(categoriasPath, "utf8"));
+
+// Función para buscar la categoría por nombre (comparación sin sensibilidad a mayúsculas/minúsculas)
+const buscarCategoriaPorNombre = (nombreMarca) => {
+  if (!nombreMarca) return null;
+  
+  // Buscar coincidencia exacta primero
+  let categoriaEncontrada = categoriasData.find(
+    cat => cat.CATEGORIA === nombreMarca
+  );
+  
+  // Si no hay coincidencia exacta, buscar sin sensibilidad a mayúsculas/minúsculas
+  if (!categoriaEncontrada) {
+    categoriaEncontrada = categoriasData.find(
+      cat => cat.CATEGORIA.toLowerCase() === nombreMarca.toLowerCase()
+    );
+  }
+  
+  // Si todavía no hay coincidencia, buscar que contenga el texto
+  if (!categoriaEncontrada) {
+    categoriaEncontrada = categoriasData.find(
+      cat => cat.CATEGORIA.toLowerCase().includes(nombreMarca.toLowerCase()) ||
+             nombreMarca.toLowerCase().includes(cat.CATEGORIA.toLowerCase())
+    );
+  }
+  
+  return categoriaEncontrada;
+};
 
 
 
@@ -41,6 +74,25 @@ const makeProducts = async (req, res) => {
     if (data) {
 
     let arrayBueno = data.map(producto => {
+      // Buscar la categoría correspondiente según producto.Marca
+      const categoriaEncontrada = buscarCategoriaPorNombre(producto.Marca);
+      
+      // Construir el objeto de categorías para WooCommerce
+      let categories = [];
+      if (categoriaEncontrada) {
+        // Si se encontró la categoría, usar el ID WC
+        categories = [
+          {
+            id: categoriaEncontrada["ID WC"]
+          }
+        ];
+        console.log(`✅ Categoría encontrada para ${producto.Marca}: ID WC ${categoriaEncontrada["ID WC"]} (${categoriaEncontrada.CATEGORIA})`);
+      } else {
+        // Si no se encuentra, usar solo el nombre como fallback
+        categories = [];
+        console.warn(`⚠️ Categoría no encontrada para "${producto.Marca}", usando solo nombre`);
+      }
+      
       return {  
         name: producto["Nombre Corto"],
         sku: producto.Código,
@@ -51,13 +103,13 @@ const makeProducts = async (req, res) => {
         status: "publish",
         stock_quantity: producto["Existencia Actual"],
         attributes: [{
-          id: 1,
           name: "Marca",
           position: 0,
           visible: true,
           variation: false,
-          options: [producto.Marca]
+          options: [producto.Modelo]
   }],
+  categories: categories,
   meta_data: [{ key: 'cliente 2 price', value: producto["Precio Mayor"] },
       {
     key: 'festiUserRolePrices',

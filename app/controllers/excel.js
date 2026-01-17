@@ -138,18 +138,34 @@ const escapeRegex = (s) => {
   return String(s).replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
 };
 
+// Función para extraer solo números de un string
+const extractNumbers = (str) => {
+  if (!str) return "";
+  return String(str).replace(/\D/g, ""); // Elimina todo lo que no sea dígito
+};
+
 const buildCodigoFilter = (termRaw) => {
   const q = termRaw ? String(termRaw).trim() : "";
   if (!q) return {};
 
-  // Optimización: Si el término no tiene caracteres especiales regex y es corto,
-  // usar búsqueda por prefijo (más eficiente con índices)
-  const escapedQ = escapeRegex(q);
+  // Extraer solo los números del término de búsqueda
+  const numbersOnly = extractNumbers(q);
   
-  // Para búsquedas por prefijo (comienzan desde el inicio), usar $regex con ^
-  // Esto permite que MongoDB use el índice de manera más eficiente
-  // El índice en Código ayudará a optimizar esta búsqueda
-  return { Código: { $regex: `^${escapedQ}`, $options: "i" } };
+  if (!numbersOnly) {
+    // Si no hay números, buscar por el término completo como antes
+    const escapedQ = escapeRegex(q);
+    return { Código: { $regex: `^${escapedQ}`, $options: "i" } };
+  }
+
+  // Si hay números, buscar códigos que contengan esa secuencia numérica
+  // Esto encontrará "G04111", "04111T", "04111", etc. cuando buscas "04111"
+  // El regex busca cualquier código que contenga la secuencia numérica en cualquier parte
+  // Ejemplo: "04111" -> busca .*0.*4.*1.*1.*1.* pero más eficiente: busca 04111 como substring
+  const escapedNumbers = escapeRegex(numbersOnly);
+  
+  // Buscar códigos que contengan la secuencia numérica (puede tener letras antes o después)
+  // Esto permite encontrar "G04111", "04111T", "04111", "X04111Y", etc.
+  return { Código: { $regex: escapedNumbers, $options: "i" } };
 };
 
 const getExcelProductos = async (codigoSearch, offset, limit) => {
