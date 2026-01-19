@@ -92,14 +92,7 @@ const makeProducts = async (req, res) => {
         categories = [];
         console.warn(`⚠️ Categoría no encontrada para "${producto.Marca}", usando solo nombre`);
       }
-      console.log("atributo: ",[{
-        id: 1,
-        name: "Marca",
-        position: 0,
-        visible: true,
-        variation: false,
-        options: [producto.Modelo]
-}])
+      console.log("producto: ", producto)
       
       return {  
         name: producto["Nombre Corto"],
