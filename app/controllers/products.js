@@ -104,6 +104,7 @@ const makeProducts = async (req, res) => {
         status: "publish",
         stock_quantity: producto["Existencia Actual"],
         attributes: [{
+          id: 1,
           name: "Marca",
           position: 0,
           visible: true,
