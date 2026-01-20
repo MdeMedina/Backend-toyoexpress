@@ -157,15 +157,45 @@ const buildCodigoFilter = (termRaw) => {
     return { Código: { $regex: `^${escapedQ}`, $options: "i" } };
   }
 
-  // Si hay números, buscar códigos que contengan esa secuencia numérica
-  // Esto encontrará "G04111", "04111T", "04111", etc. cuando buscas "04111"
-  // El regex busca cualquier código que contenga la secuencia numérica en cualquier parte
-  // Ejemplo: "04111" -> busca .*0.*4.*1.*1.*1.* pero más eficiente: busca 04111 como substring
-  const escapedNumbers = escapeRegex(numbersOnly);
+  // Si el término original contiene caracteres no numéricos (guiones, letras, etc.),
+  // hacer una búsqueda más precisa: buscar el término original Y también los números extraídos
+  // Si solo tiene números, usar búsqueda por prefijo para mejor rendimiento
   
-  // Buscar códigos que contengan la secuencia numérica (puede tener letras antes o después)
-  // Esto permite encontrar "G04111", "04111T", "04111", "X04111Y", etc.
-  return { Código: { $regex: escapedNumbers, $options: "i" } };
+  const hasNonNumericChars = /[^0-9]/.test(q);
+  
+  if (hasNonNumericChars) {
+    // El usuario escribió algo como "90919-0" o "90919-"
+    // En este caso, buscar códigos que:
+    // 1. Coincidan con el término exacto (con escape), O
+    // 2. Contengan la secuencia numérica en orden, permitiendo caracteres entre dígitos
+    
+    // Opción 1: Búsqueda exacta del término (escapeado)
+    const escapedQ = escapeRegex(q);
+    
+    // Opción 2: Búsqueda flexible de la secuencia numérica
+    // Construir regex que busque dígitos en orden permitiendo caracteres entre ellos
+    const digitsArray = numbersOnly.split("");
+    const flexiblePattern = digitsArray.map((digit) => {
+      const escapedDigit = escapeRegex(digit);
+      // Permitir 0 o más caracteres no numéricos después de cada dígito
+      // Esto permite encontrar "90919-0", "909190", "G90919-0X", etc.
+      return `${escapedDigit}[^0-9]*`;
+    }).join("");
+    
+    // Combinar ambas búsquedas con OR: (término exacto) O (secuencia numérica flexible)
+    // La búsqueda exacta busca el término tal cual el usuario lo escribió
+    // La búsqueda flexible busca los dígitos en orden, permitiendo caracteres no numéricos entre ellos
+    const combinedPattern = `(${escapedQ}|${flexiblePattern})`;
+    
+    console.log(`🔍 Búsqueda híbrida: "${q}" -> números: "${numbersOnly}" -> regex: "${combinedPattern}"`);
+    
+    return { Código: { $regex: combinedPattern, $options: "i" } };
+  } else {
+    // Solo números: usar búsqueda por prefijo para mejor rendimiento con índices
+    const escapedNumbers = escapeRegex(numbersOnly);
+    console.log(`🔍 Búsqueda numérica simple: "${q}" -> regex: "^${escapedNumbers}"`);
+    return { Código: { $regex: `^${escapedNumbers}`, $options: "i" } };
+  }
 };
 
 const getExcelProductos = async (codigoSearch, offset, limit) => {
