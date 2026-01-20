@@ -9,29 +9,61 @@ const categoriasPath = path.join(__dirname, "../utils/codigos_categoria.json");
 const categoriasData = JSON.parse(fs.readFileSync(categoriasPath, "utf8"));
 
 // Función para buscar la categoría por nombre (comparación sin sensibilidad a mayúsculas/minúsculas)
+const normalizarTextoCategoria = (texto) => {
+  if (texto === null || texto === undefined) return "";
+
+  return String(texto)
+    .trim()
+    .normalize("NFD")
+    .replace(/\p{Diacritic}/gu, "")
+    .replace(/\s*&\s*/g, "&")
+    .replace(/\s+/g, " ")
+    .toLowerCase();
+};
+
 const buscarCategoriaPorNombre = (nombreMarca) => {
-  if (!nombreMarca) return null;
-  
-  // Buscar coincidencia exacta primero
-  let categoriaEncontrada = categoriasData.find(
-    cat => cat.CATEGORIA === nombreMarca
+  if (!nombreMarca) {
+    console.log("🔎 buscarCategoriaPorNombre: nombreMarca vacío o null.");
+    return null;
+  }
+
+  const nombreMarcaNormalizado = normalizarTextoCategoria(nombreMarca);
+  console.log(
+    `🔎 buscarCategoriaPorNombre: nombreMarca original="${nombreMarca}" | normalizado="${nombreMarcaNormalizado}"`
   );
-  
-  // Si no hay coincidencia exacta, buscar sin sensibilidad a mayúsculas/minúsculas
-  if (!categoriaEncontrada) {
-    categoriaEncontrada = categoriasData.find(
-      cat => cat.CATEGORIA.toLowerCase() === nombreMarca.toLowerCase()
+
+  // Buscar coincidencia exacta primero (normalizada)
+  let categoriaEncontrada = categoriasData.find(cat => {
+    const categoriaNormalizada = normalizarTextoCategoria(cat.CATEGORIA);
+    const coincide = categoriaNormalizada === nombreMarcaNormalizado;
+    console.log(
+      `🔎 Comparación EXACTA | categoria="${cat.CATEGORIA}" | normalizada="${categoriaNormalizada}" | coincide=${coincide}`
     );
-  }
-  
-  // Si todavía no hay coincidencia, buscar que contenga el texto
+    return coincide;
+  });
+
+  // Si no hay coincidencia exacta, buscar que contenga el texto
   if (!categoriaEncontrada) {
-    categoriaEncontrada = categoriasData.find(
-      cat => cat.CATEGORIA.toLowerCase().includes(nombreMarca.toLowerCase()) ||
-             nombreMarca.toLowerCase().includes(cat.CATEGORIA.toLowerCase())
-    );
+    categoriaEncontrada = categoriasData.find(cat => {
+      const categoriaNormalizada = normalizarTextoCategoria(cat.CATEGORIA);
+      const contiene =
+        categoriaNormalizada.includes(nombreMarcaNormalizado) ||
+        nombreMarcaNormalizado.includes(categoriaNormalizada);
+      console.log(
+        `🔎 Comparación CONTAINS | categoria="${cat.CATEGORIA}" | normalizada="${categoriaNormalizada}" | contiene=${contiene}`
+      );
+      return contiene;
+    });
   }
-  
+
+  if (categoriaEncontrada) {
+    console.log(
+      `✅ Categoría encontrada: "${categoriaEncontrada.CATEGORIA}" (ID WC ${categoriaEncontrada["ID WC"]})`
+    );
+  } else {
+    console.log("⚠️ Categoría no encontrada tras comparaciones.");
+  }
+
   return categoriaEncontrada;
 };
 
