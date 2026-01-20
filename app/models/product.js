@@ -18,9 +18,14 @@ const Producto = mongoose.model("Producto", {
     variation: Boolean,
     options: [String]
   }],
-    meta_data: [
-  { id: Number, key: String, value: String },
-  { id: Number, key: String, value: String },
+  categories: [{
+    id: Number,
+    name: String,
+    slug: String
+  }],
+  meta_data: [
+    { id: Number, key: String, value: String },
+    { id: Number, key: String, value: String },
   ],
 });
 

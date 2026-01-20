@@ -240,15 +240,32 @@ const assingProducts = async (req, res) => {
           manage_stock: true,
           status: prod.status || "publish",
           attributes: prod.attributes || [],
+          categories: prod.categories || [],
           meta_data: prod.meta_data || [],
         };
       }),
     };
 
+    const sinCategoriasCreate = data.create.filter(p => !p.categories || p.categories.length === 0);
+    const sinCategoriasUpdate = data.update.filter(p => !p.categories || p.categories.length === 0);
+    if (sinCategoriasCreate.length > 0 || sinCategoriasUpdate.length > 0) {
+      console.warn(
+        `⚠️ Productos sin categorías | create=${sinCategoriasCreate.length} | update=${sinCategoriasUpdate.length}`
+      );
+      sinCategoriasCreate.slice(0, 5).forEach(p =>
+        console.warn(`   ➤ create sin categorías | SKU: ${p.sku} | Nombre: ${p.name}`)
+      );
+      sinCategoriasUpdate.slice(0, 5).forEach(p =>
+        console.warn(`   ➤ update sin categorías | SKU: ${p.sku} | Nombre: ${p.name}`)
+      );
+    }
+
     // Mostrar un resumen del batch
     console.log("📦 Productos preparados para WooCommerce:");
     data.update.slice(0, 5).forEach((p, i) =>
-      console.log(`   ${i + 1}. ID: ${p.id} | SKU: ${p.sku} | Precio: ${p.regular_price} | Stock: ${p.stock_quantity}`)
+      console.log(
+        `   ${i + 1}. ID: ${p.id} | SKU: ${p.sku} | Precio: ${p.regular_price} | Stock: ${p.stock_quantity} | Categorías: ${p.categories?.length || 0}`
+      )
     );
     if (data.update.length > 5) console.log(`   ... y ${data.update.length - 5} más.`);
 
