@@ -193,8 +193,11 @@ const buildCodigoFilter = (termRaw) => {
   } else {
     // Solo números: usar búsqueda por prefijo para mejor rendimiento con índices
     const escapedNumbers = escapeRegex(numbersOnly);
-    console.log(`🔍 Búsqueda numérica simple: "${q}" -> regex: "^${escapedNumbers}"`);
-    return { Código: { $regex: `^${escapedNumbers}`, $options: "i" } };
+    const prefixPattern = `^[^0-9]*${escapedNumbers}`;
+    console.log(
+      `🔍 Búsqueda numérica simple: "${q}" -> regex: "${prefixPattern}"`
+    );
+    return { Código: { $regex: prefixPattern, $options: "i" } };
   }
 };
 
