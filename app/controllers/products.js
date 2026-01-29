@@ -89,6 +89,18 @@ const client = new SQSClient({   region: process.env.AWS_REGION,   credentials: 
 let arrayChunked = []
 let arrayComprobatorio = []
 
+const formatError = (error) => {
+  if (!error) return "Error desconocido";
+  if (error.response?.data) {
+    try {
+      return JSON.stringify(error.response.data);
+    } catch (stringifyError) {
+      return String(error.response.data);
+    }
+  }
+  return error.message || String(error);
+};
+
 
 
 const splitArrayIntoChunks = (array, chunkSize) => {
@@ -154,17 +166,27 @@ const makeProducts = async (req, res) => {
     })
     const skus = data.map(producto => producto.Código);
     arrayChunked = splitArrayIntoChunks(skus, 50)
- Producto.deleteMany({}, function (err) {
-    if (err) {
-      console.log(err);
-    } else {
-      console.log(
-        "Todos los documentos de la colección de productos han sido eliminados."
-      );
-    }
-  });
- Producto.insertMany(arrayBueno);
-console.log("Productos insertados correctamente en la base de datos.");
+  try {
+    await Producto.deleteMany({});
+    console.log(
+      "Todos los documentos de la colección de productos han sido eliminados."
+    );
+  } catch (error) {
+    const message = `Error al eliminar productos en Mongo: ${formatError(error)}`;
+    console.error(message);
+    global.shared?.logError?.(message);
+    return res.status(500).send({ message });
+  }
+
+  try {
+    await Producto.insertMany(arrayBueno);
+    console.log("Productos insertados correctamente en la base de datos.");
+  } catch (error) {
+    const message = `Error al insertar productos en Mongo: ${formatError(error)}`;
+    console.error(message);
+    global.shared?.logError?.(message);
+    return res.status(500).send({ message });
+  }
   const params = {
     QueueUrl: "https://sqs.us-east-1.amazonaws.com/465836752361/Productos.fifo",
     MessageBody: JSON.stringify({arr: arrayChunked[0], index: 0, maximo: length, nombre: body.nombre}),
@@ -174,10 +196,12 @@ console.log("Productos insertados correctamente en la base de datos.");
   console.log(params)
   const command = new SendMessageCommand(params);
   try {
-    const data = await client.send(command);
-     console.log("Mensaje enviado: ", 0)
+    await client.send(command);
+    console.log("Mensaje enviado: ", 0);
   } catch (error) {
-    console.error("Error al enviar el mensaje:", error);
+    const message = `Error al enviar el mensaje SQS de productos: ${formatError(error)}`;
+    console.error(message);
+    global.shared?.logError?.(message);
   }
 
 
@@ -187,8 +211,10 @@ console.log("Productos insertados correctamente en la base de datos.");
   res.status(400).send({ message: "Error al actualizar el Excel" });
 }
     } catch (error) {
-    console.error(error)
-    sendError()
+    const message = `Error general en makeProducts: ${formatError(error)}`;
+    console.error(message);
+    global.shared?.logError?.(message);
+    sendError();
     throw error;
   }
 
@@ -306,7 +332,9 @@ const assingProducts = async (req, res) => {
       try {
         await WooCommerce.post("products/batch", dataRetry);
       } catch (err) {
-        console.error(`❌ Error en intento ${intento}:`, err.response?.data || err.message);
+        const message = `Error en intento ${intento} WooCommerce: ${formatError(err)}`;
+        console.error(`❌ ${message}`);
+        global.shared?.logError?.(message);
       }
 
       await new Promise(r => setTimeout(r, 2000));
@@ -328,8 +356,15 @@ const assingProducts = async (req, res) => {
     };
 
     // 🚀 Enviar batch inicial
-    await WooCommerce.post("products/batch", data);
-    console.log("✅ Batch enviado a WooCommerce.");
+    try {
+      await WooCommerce.post("products/batch", data);
+      console.log("✅ Batch enviado a WooCommerce.");
+    } catch (error) {
+      const message = `Error al enviar batch a WooCommerce: ${formatError(error)}`;
+      console.error(message);
+      global.shared?.logError?.(message);
+      throw error;
+    }
 
     await new Promise(r => setTimeout(r, 2000));
 
@@ -395,8 +430,9 @@ const assingProducts = async (req, res) => {
     res.status(200).send({ message: "Datos actualizados y verificados exitosamente en WooCommerce." });
 
   } catch (error) {
-    console.error("❌ Error general:", error);
-    global.shared.logError(error);
+    const message = `Error general en assingProducts: ${formatError(error)}`;
+    console.error("❌ Error general:", message);
+    global.shared?.logError?.(message);
     global.shared.sendToClients(
       JSON.stringify({ index: body.index + 1, maximo: body.maximo, estado: false, nombre: body.nombre })
     );

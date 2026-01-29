@@ -15,6 +15,22 @@ const router = express.Router();
 router.get("/productsComplete", isAuthenticated ,getCompleteExcelProductos);
 router.get("/fecha", isAuthenticated ,fechaget);
 router.post("/products", isAuthenticated, async (req, res) => {
+  const requestStart = process.hrtime.bigint();
+  res.once("finish", () => {
+    const elapsedMs = Number(process.hrtime.bigint() - requestStart) / 1e6;
+    const contentLength = res.getHeader("Content-Length");
+    console.log(
+      `✅ /excel/products finish ${res.statusCode} ${elapsedMs.toFixed(0)}ms` +
+        (contentLength ? ` (${contentLength} bytes)` : "")
+    );
+  });
+  res.once("close", () => {
+    const elapsedMs = Number(process.hrtime.bigint() - requestStart) / 1e6;
+    if (!res.writableEnded) {
+      console.warn(`⚠️ /excel/products closed early after ${elapsedMs.toFixed(0)}ms`);
+    }
+  });
+
   console.time("⏱️ /products TOTAL");
 
   try {
