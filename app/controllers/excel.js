@@ -89,7 +89,10 @@ let fechas = await Fecha.find({})
 };4
 
 const getExcelClientes = async (condition, page) => {
-  let codigo = condition ? { Nombre: new RegExp(condition.Nombre, "i") } : {};
+  const term = typeof condition === "object" ? condition?.Nombre : condition;
+  const codigo = term
+    ? { Nombre: new RegExp(escapeRegex(term), "i") }
+    : {};
 
   const start = Date.now();
 
@@ -103,7 +106,7 @@ const getExcelClientes = async (condition, page) => {
   console.timeEnd("mongo:find(ExcelClientes)");
 
   console.time("mongo:count(ExcelClientes)");
-  const total = await ExcelClientes.countDocuments(condition);
+  const total = await ExcelClientes.countDocuments(codigo);
   console.timeEnd("mongo:count(ExcelClientes)");
 
   const end = Date.now();
